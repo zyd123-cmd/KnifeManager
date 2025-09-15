@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+ <trees>
+     <tree path="/src/views/borrowManagement" title="借出管理" extension="" presentableText="" tooltipTitle="" icon=""
+           textColor="" backgroundColor=""/>
+     <tree path="/src/views/employeeManagement" title="员工管理"/>
+     <tree path="/src/views/toolManagement" title="刀具管理"/>
+     <tree path="/src/views/productOrder" title="产品工单"/>
+     <tree path="/src/views/productOrder/productOrder" title="产品工单"/>
+     <tree path="/src/views/cabinetService" title="刀具柜服务"/>
+ </trees>
