@@ -192,6 +192,32 @@ export const constantRoutes = [
                     link: null
                 }
             },
+            //刀头暂存页面
+            {
+                name: "DaoTouTemporaryStorage",
+                path: "daoTouTemporaryStorage",
+                hidden: false,
+                component: () => import('@/views/borrowManagement/daoTouTemporaryStorage/index'),
+                meta: {
+                    title: "刀头暂存",
+                    icon: "connection",
+                    noCache: false,
+                    link: null
+                }
+            },
+            //刀柄暂存页面
+            {
+                name: "daoBingTemporaryStorage",
+                path: "daoBingTemporaryStorage",
+                hidden: false,
+                component: () => import('@/views/borrowManagement/daoBingTemporaryStorage/index'),
+                meta: {
+                    title: "刀柄暂存",
+                    icon: "connection",
+                    noCache: false,
+                    link: null
+                }
+            }
         ]
     },
     {
