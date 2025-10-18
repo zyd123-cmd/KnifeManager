@@ -83,7 +83,8 @@ function filterRoutesByRole(routes, role) {
       'DataDictionary',        // 数据字典
       'SystemStatistics',      // 系统统计
       'SystemRecord',          // 系统记录
-      'HistoryRecord'          // 历史记录（如果还有剩余功能）
+      'HistoryRecord' ,         // 历史记录（如果还有剩余功能）
+      'SystemRanking'          // 系统排行
     ] // 审计员看到其他模块
   }
 
