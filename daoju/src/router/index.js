@@ -370,86 +370,76 @@ export const constantRoutes = [
             }
         ]
     },
-    {
-        name: "DataDictionary",
-        path: "/dataDictionary",
-        hidden: false,
-        redirect: "noRedirect",
-        component: Layout,
-        alwaysShow: true,
-        meta: {
-            title: "数据字典",
-            icon: "document",
-            noCache: false,
-            link: null,
-        },
-        children: [
-            {
-                name: "DictCollection",
-                path: "dictCollection",
-                hidden: false,
-                component: () => import('@/views/dataDictionary/dictCollection/index.vue'),
-                meta: {
-                    title: "字典集合",
-                    icon: "collection",
-                    noCache: false,
-                    link: null
-                }
-            },
-            {
-                name: "PersonalizedSettings",
-                path: "personalizedSettings",
-                hidden: false,
-                component: () => import('@/views/dataDictionary/personalizedSettings/index.vue'),
-                meta: {
-                    title: "个性化设置",
-                    icon: "setting",
-                    noCache: false,
-                    link: null
-                }
-            },
-        ]
-    },
-    {
-        name: "HistoryRecord",
-        path: "/historyRecord",
-        hidden: false,
-        redirect: "noRedirect",
-        component: Layout,
-        alwaysShow: true,
-        meta: {
-            title: "历史记录",
-            icon: "history",
-            noCache: false,
-            link: null,
-        },
-        children: [
-            {
-                name: "OperationLog",
-                path: "operationLog",
-                hidden: false,
-                component: () => import('@/views/historyRecord/operationLog/index'),
-                meta: {
-                    title: "操作日志",
-                    icon: "operation",
-                    noCache: false,
-                    link: null
-                }
-            },
-            {
-                name: "PublicStorage",
-                path: "publicStorage",
-                hidden: false,
-                component: () => import('@/views/historyRecord/publicStorage/index'),
-                meta: {
-                    title: "公共暂存",
-                    icon: "files",
-                    noCache: false,
-                    link: null
-                }
-            },
-        ]
-    },
+    // 数据字典
+    // {
+    //     name: "DataDictionary",
+    //     path: "/dataDictionary",
+    //     hidden: false,
+    //     redirect: "noRedirect",
+    //     component: Layout,
+    //     alwaysShow: true,
+    //     meta: {
+    //         title: "数据字典",
+    //         icon: "document",
+    //         noCache: false,
+    //         link: null,
+    //     },
+    //     children: [
+    //         {
+    //             name: "DictCollection",
+    //             path: "dictCollection",
+    //             hidden: false,
+    //             component: () => import('@/views/dataDictionary/dictCollection/index.vue'),
+    //             meta: {
+    //                 title: "字典集合",
+    //                 icon: "collection",
+    //                 noCache: false,
+    //                 link: null
+    //             }
+    //         },
+    //         {
+    //             name: "PersonalizedSettings",
+    //             path: "personalizedSettings",
+    //             hidden: false,
+    //             component: () => import('@/views/dataDictionary/personalizedSettings/index.vue'),
+    //             meta: {
+    //                 title: "个性化设置",
+    //                 icon: "setting",
+    //                 noCache: false,
+    //                 link: null
+    //             }
+    //         },
+    //     ]
+    // },
+    // 历史记录
+    // {
+    //     name: "HistoryRecord",
+    //     path: "/historyRecord",
+    //     hidden: false,
+    //     redirect: "noRedirect",
+    //     component: Layout,
+    //     alwaysShow: true,
+    //     meta: {
+    //         title: "历史记录",
+    //         icon: "history",
+    //         noCache: false,
+    //         link: null,
+    //     },
+    //     children: [
+    //         {
+    //             name: "OperationLog",
+    //             path: "operationLog",
+    //             hidden: false,
+    //             component: () => import('@/views/historyRecord/operationLog/index'),
+    //             meta: {
+    //                 title: "操作日志",
+    //                 icon: "operation",
+    //                 noCache: false,
+    //                 link: null
+    //             }
+    //         },
+    //     ]
+    // },
     {
         name: "Workshop",
         path: "/workshop",
@@ -545,34 +535,35 @@ export const constantRoutes = [
             }
         ]
     },
-    {
-        name: "BorrowReturnInfo",
-        path: "/borrowReturnInfo",
-        hidden: false,
-        redirect: "noRedirect",
-        component: Layout,
-        alwaysShow: true,
-        meta: {
-            title: "取还收刀信息",
-            icon: "refresh",
-            noCache: false,
-            link: null
-        },
-        children: [
-            {
-                name: "RankingStatistics",
-                path: "rankingStatistics",
-                hidden: false,
-                component: () => import('@/views/borrowReturnInfo/rankingStatistics/index'),
-                meta: {
-                    title: "排行统计",
-                    icon: "data-line",
-                    noCache: false,
-                    link: null
-                }
-            }
-        ]
-    },
+    // 取还收刀信息
+    // {
+    //     name: "BorrowReturnInfo",
+    //     path: "/borrowReturnInfo",
+    //     hidden: false,
+    //     redirect: "noRedirect",
+    //     component: Layout,
+    //     alwaysShow: true,
+    //     meta: {
+    //         title: "取还收刀信息",
+    //         icon: "refresh",
+    //         noCache: false,
+    //         link: null
+    //     },
+    //     children: [
+    //         {
+    //             name: "RankingStatistics",
+    //             path: "rankingStatistics",
+    //             hidden: false,
+    //             component: () => import('@/views/borrowReturnInfo/rankingStatistics/index'),
+    //             meta: {
+    //                 title: "排行统计",
+    //                 icon: "data-line",
+    //                 noCache: false,
+    //                 link: null
+    //             }
+    //         }
+    //     ]
+    // },
     {
         name: "SystemStatistics",
         path: "/systemStatistics",
@@ -593,24 +584,52 @@ export const constantRoutes = [
                 hidden: false,
                 component: () => import('@/views/historyRecord/stockRecord/index'),
                 meta: {
-                    title: "出入库记录",
+                    title: "出入库统计",
                     icon: "box",
                     noCache: false,
                     link: null
                 }
             },
+            
             {
-                name: "LendRecord",
-                path: "lendRecord",
+                name: "YearlyQuantityStatistics",
+                path: "yearlyQuantityStatistics",
                 hidden: false,
-                component: () => import('@/views/historyRecord/lendRecord/index'),
+                component: () => import('@/views/borrowReturnInfo/YearlyQuantityStatistics/index.vue'),
                 meta: {
-                    title: "领刀记录",
-                    icon: "document",
+                    title: "全年取刀数量统计",
+                    icon: "data-line",
                     noCache: false,
                     link: null
                 }
             },
+
+            {
+                name: "YearlyAmountStatistics",
+                path: "yearlyAmountStatistics",
+                hidden: false,
+                component: () => import('@/views/borrowReturnInfo/YearlyAmountStatistics/index.vue'),
+                meta: {
+                    title: "全年取刀金额统计",
+                    icon: "data-line",
+                    noCache: false,
+                    link: null
+                }
+            },
+
+            {
+                name: "YearlyUsageStatistics",
+                path: "yearlyUsageStatistics",
+                hidden: false,
+                component: () => import('@/views/borrowReturnInfo/YearlyUsageStatistics/index.vue'),
+                meta: {
+                    title: "刀具消耗统计",
+                    icon: "data-line",
+                    noCache: false,
+                    link: null
+                }
+            },
+
             {
                 name: "TotalInventoryStats",
                 path: "totalInventoryStats",
@@ -623,68 +642,97 @@ export const constantRoutes = [
                     link: null
                 }
             },
+
             {
-                name: "CabinetChannelStats",
-                path: "cabinetChannelStats",
+                name: "RestockRecord",
+                path: "restockRecord",
                 hidden: false,
-                redirect: "noRedirect",
+                component: () => import('@/views/historyRecord/restockRecord/index'),
                 meta: {
-                    title: "刀柜货道",
-                    icon: "grid",
+                    title: "货道库存统计",
+                    icon: "goods",
                     noCache: false,
                     link: null
-                },
-                children: [
-                    {
-                        name: "CollectCabinet",
-                        path: "collectCabinet",
-                        hidden: false,
-                        component: () => import('@/views/cabinetChannel/collectCabinet/index'),
-                        meta: {
-                            title: "收刀柜",
-                            icon: "box",
-                            noCache: false,
-                            link: null
-                        }
-                    },
-                    {
-                        name: "TakeCabinet",
-                        path: "takeCabinet",
-                        hidden: false,
-                        component: () => import('@/views/cabinetChannel/takeCabinet/index'),
-                        meta: {
-                            title: "取刀柜",
-                            icon: "shopping-cart",
-                            noCache: false,
-                            link: null
-                        }
-                    },
-                    {
-                        name: "HandleCabinet",
-                        path: "handleCabinet",
-                        hidden: false,
-                        component: () => import('@/views/cabinetChannel/handleCabinet/index.vue'),
-                        meta: {
-                            title: "刀柄柜",
-                            icon: "tools",
-                            noCache: false,
-                            link: null
-                        }
-                    },
-                    {
-                        name: "CollectHandleCabinet",
-                        path: "collectHandleCabinet",
-                        hidden: false,
-                        component: () => import('@/views/cabinetChannel/collectHandleCabinet/index.vue'),
-                        meta: {
-                            title: "收刀柄柜",
-                            icon: "box",
-                            noCache: false,
-                            link: null
-                        }
-                    }
-                ]
-            }
+                }
+            },
+
+            {
+                name: "ScrapKnifeCollectionStatistics",
+                path: "scrapKnifeCollectionStatistics",
+                hidden: false,
+                component: () => import('@/views/borrowReturnInfo/ScrapKnifeCollectionStatistics/index'),
+                meta: {
+                    title: "废刀回收统计",
+                    icon: "data-line",
+                    noCache: false,
+                    link: null
+                }
+            },
+
+            
+
+            // {
+            //     name: "CabinetChannelStats",
+            //     path: "cabinetChannelStats",
+            //     hidden: false,
+            //     redirect: "noRedirect",
+            //     meta: {
+            //         title: "刀柜货道",
+            //         icon: "grid",
+            //         noCache: false,
+            //         link: null
+            //     },
+            //     children: [
+            //         {
+            //             name: "CollectCabinet",
+            //             path: "collectCabinet",
+            //             hidden: false,
+            //             component: () => import('@/views/cabinetChannel/collectCabinet/index'),
+            //             meta: {
+            //                 title: "收刀柜",
+            //                 icon: "box",
+            //                 noCache: false,
+            //                 link: null
+            //             }
+            //         },
+            //         {
+            //             name: "TakeCabinet",
+            //             path: "takeCabinet",
+            //             hidden: false,
+            //             component: () => import('@/views/cabinetChannel/takeCabinet/index'),
+            //             meta: {
+            //                 title: "取刀柜",
+            //                 icon: "shopping-cart",
+            //                 noCache: false,
+            //                 link: null
+            //             }
+            //         },
+            //         {
+            //             name: "HandleCabinet",
+            //             path: "handleCabinet",
+            //             hidden: false,
+            //             component: () => import('@/views/cabinetChannel/handleCabinet/index.vue'),
+            //             meta: {
+            //                 title: "刀柄柜",
+            //                 icon: "tools",
+            //                 noCache: false,
+            //                 link: null
+            //             }
+            //         },
+            //         {
+            //             name: "CollectHandleCabinet",
+            //             path: "collectHandleCabinet",
+            //             hidden: false,
+            //             component: () => import('@/views/cabinetChannel/collectHandleCabinet/index.vue'),
+            //             meta: {
+            //                 title: "收刀柄柜",
+            //                 icon: "box",
+            //                 noCache: false,
+            //                 link: null
+            //             }
+            //         }
+            //     ]
+            // }
         ]
     },
     {
@@ -701,11 +749,36 @@ export const constantRoutes = [
             link: null
         },
         children: [
+            // {
+            //     name: "RestockRecord",
+            //     path: "restockRecord",
+            //     hidden: false,
+            //     component: () => import('@/views/historyRecord/restockRecord/index'),
+            //     meta: {
+            //         title: "补货记录",
+            //         icon: "goods",
+            //         noCache: false,
+            //         link: null
+            //     }
+            // },
+
             {
-                name: "RestockRecord",
-                path: "restockRecord",
+                name: "PersonnelManagementRecord",
+                path: "personnelManagementRecord",
                 hidden: false,
-                component: () => import('@/views/historyRecord/restockRecord/index'),
+                component: () => import('@/views/PersonnelManagementRecord/index.vue'),
+                meta: {
+                    title: "人员管理记录",
+                    // icon: "user",
+                    noCache: false,
+                    link: null
+                }
+            },
+            {
+                name: "ReplenishmentRecord",
+                path: "replenishmentRecord",
+                hidden: false,
+                component: () => import('@/views/ReplenishmentRecord/index.vue'),
                 meta: {
                     title: "补货记录",
                     icon: "goods",
@@ -713,55 +786,33 @@ export const constantRoutes = [
                     link: null
                 }
             },
+
             {
-                name: "ReturnInfo",
-                path: "returnInfo",
+                name: "LendRecord",
+                path: "lendRecord",
                 hidden: false,
-                component: () => import('@/views/borrowReturnInfo/returnInfo/index'),
+                component: () => import('@/views/historyRecord/lendRecord/index'),
                 meta: {
-                    title: "还刀信息",
-                    icon: "refresh-left",
+                    title: "领用领出记录",
+                    icon: "document",
                     noCache: false,
                     link: null
                 }
             },
+
             {
-                name: "CollectInfo",
-                path: "collectInfo",
+                name: "PublicStorage",
+                path: "publicStorage",
                 hidden: false,
-                component: () => import('@/views/borrowReturnInfo/collectInfo/index.vue'),
+                component: () => import('@/views/historyRecord/publicStorage/index'),
                 meta: {
-                    title: "收刀信息",
-                    icon: "collection",
+                    title: "暂存记录",
+                    icon: "files",
                     noCache: false,
                     link: null
                 }
             },
-            {
-                name: "UnreturnedInfo",
-                path: "unreturnedInfo",
-                hidden: false,
-                component: () => import('@/views/borrowReturnInfo/unreturnedInfo/index'),
-                meta: {
-                    title: "未还信息",
-                    icon: "warning",
-                    noCache: false,
-                    link: null
-                }
-            }
-        ]
-    },
-    {
-        path: '/alarmWarning',
-        component: Layout,
-        redirect: '/alarmWarning/index',
-        meta: {
-            title: "预警警告",
-            icon: "warning",
-            noCache: false,
-            link: null
-        },
-        children: [
+
             {
                 name: "AlarmWarning",
                 path: "index",
@@ -773,9 +824,138 @@ export const constantRoutes = [
                     noCache: false,
                     link: null
                 }
-            }
+            },
+
+            // {
+            //     name: "ReturnInfo",
+            //     path: "returnInfo",
+            //     hidden: false,
+            //     component: () => import('@/views/borrowReturnInfo/returnInfo/index'),
+            //     meta: {
+            //         title: "还刀信息",
+            //         icon: "refresh-left",
+            //         noCache: false,
+            //         link: null
+            //     }
+            // },
+            // {
+            //     name: "CollectInfo",
+            //     path: "collectInfo",
+            //     hidden: false,
+            //     component: () => import('@/views/borrowReturnInfo/collectInfo/index.vue'),
+            //     meta: {
+            //         title: "收刀信息",
+            //         icon: "collection",
+            //         noCache: false,
+            //         link: null
+            //     }
+            // },
+            // {
+            //     name: "UnreturnedInfo",
+            //     path: "unreturnedInfo",
+            //     hidden: false,
+            //     component: () => import('@/views/borrowReturnInfo/unreturnedInfo/index'),
+            //     meta: {
+            //         title: "未还信息",
+            //         icon: "warning",
+            //         noCache: false,
+            //         link: null
+            //     }
+            // }
         ]
-    }
+    },
+
+    {
+        name: "SystemRanking",
+        path: "/SystemRanking",
+        hidden: false,
+        redirect: "noRedirect",
+        component: Layout,
+        alwaysShow: true,
+        meta: {
+            title: "系统排行",
+            icon: "document",
+            noCache: false,
+            link: null
+        },
+        children: [
+            {
+                name: "EmployeeRanking",
+                path: "employeeRanking",
+                hidden: false,
+                component: () => import('@/views/leaderBoard/EmployeeRanking/index.vue'),
+                meta: {
+                    title: "员工领刀排行",
+                    icon: "data-line",
+                    noCache: false,
+                    link: null
+                }
+            },
+            {
+                name: "EquipmentKnife",
+                path: "equipmentKnife",
+                hidden: false,
+                component: () => import('@/views/leaderBoard/EquipmentKnife/index.vue'),
+                meta: {
+                    title: "设备用刀排行",
+                    icon: "data-line",
+                    noCache: false,
+                    link: null
+                }
+            },
+            {
+                name: "CutterModelRanking",
+                path: "cutterModelRanking",
+                hidden: false,
+                component: () => import('@/views/leaderBoard/CutterModelRanking/index.vue'),
+                meta: {
+                    title: "刀具型号排行",
+                    icon: "data-line",
+                    noCache: false,
+                    link: null
+                }
+            },
+            {
+                name: "AbnormalReturnRanking",
+                path: "abnormalReturnRanking",
+                hidden: false,
+                component: () => import('@/views/leaderBoard/AbnormalReturnRanking/index.vue'),
+                meta: {
+                    title: "异常还刀排行",
+                    icon: "data-line",
+                    noCache: false,
+                    link: null
+                }
+            }
+
+        ]
+    },
+
+    // {
+    //     path: '/alarmWarning',
+    //     component: Layout,
+    //     redirect: '/alarmWarning/index',
+    //     meta: {
+    //         title: "预警警告",
+    //         icon: "warning",
+    //         noCache: false,
+    //         link: null
+    //     },
+    //     children: [
+    //         {
+    //             name: "AlarmWarning",
+    //             path: "index",
+    //             hidden: false,
+    //             component: () => import('@/views/alarmWarning/index.vue'),
+    //             meta: {
+    //                 title: "预警警告",
+    //                 icon: "warning",
+    //                 noCache: false,
+    //                 link: null
+    //             }
+    //         }
+    //     ]
+    // }
 
 ]
 

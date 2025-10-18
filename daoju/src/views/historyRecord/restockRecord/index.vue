@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div>历史记录 - 补货记录</div>
+    <div>货道库存统计</div>
     
     <!-- 顶部查询条件区域 -->
     <div class="topSearchDiv">

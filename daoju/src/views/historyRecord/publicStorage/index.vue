@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div>历史记录 - 公共暂存</div>
+    <div>暂存记录</div>
     
     <!-- 顶部查询条件区域 -->
     <div class="topSearchDiv">
