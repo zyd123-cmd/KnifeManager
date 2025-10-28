@@ -67,25 +67,35 @@ function filterRoutesByRole(routes, role) {
   console.log('过滤路由 - 输入路由:', routes)
 
   const roleRouteMap = {
-    'operator': ['BorrowManagement'], // 操作员只能看到借出管理模块
-    'admin': [
+     // 操作员只能看到借出管理模块
+    'operator': [
+      'ToolManagement',        // 工具管理
+      'BorrowManagement',
       'BorrowManagement',      // 工具管理（借出管理）
+      'BorrowReturnInfo'     // 取还收刀信息
+    ],
+    // 管理员看到指定的模块
+    'admin': [
       'BrandManagement',       // 品牌管理
       'AlarmWarning',          // 预警警告
-      'CutterTypeManagement',  // 刀具类型管理
-      'CabinetService',        // 刀具柜服务
+      // 'CutterTypeManagement',  // 刀具类型管理
+      // 'CabinetService',        // 刀具柜服务
       'ConsumableService',     // 耗材服务
-      'SystemStatistics',      // 系统统计
-      'SystemRecord'           // 系统记录
-    ], // 管理员看到指定的模块
+      'AdminManagement',      // 管理员管理
+      'EmployeeManagement',   // 操作员管理
+      'AuditorManagement',    // 审计员管理
+    ], 
+    // 审计员看到其他模块
     'auditor': [
       'BorrowReturnInfo',      // 取还收刀信息
       'DataDictionary',        // 数据字典
       'SystemStatistics',      // 系统统计
       'SystemRecord',          // 系统记录
       'HistoryRecord' ,         // 历史记录（如果还有剩余功能）
+      'SystemStatistics',      // 系统统计
+      'SystemRecord',           // 系统记录
       'SystemRanking'          // 系统排行
-    ] // 审计员看到其他模块
+    ] 
   }
 
   const allowedModules = roleRouteMap[role]
