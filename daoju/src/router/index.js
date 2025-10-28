@@ -84,7 +84,7 @@ export const constantRoutes = [
             }
         ]
     },
-    // 库存管理,
+    // 库存管理 - 班组长
     // {
     //     name: "ToolManagement",
     //     path: "/toolManagement",
@@ -167,10 +167,10 @@ export const constantRoutes = [
     //         //刀具柜管理
     //         {
     //                 name: "CabinetService",
-    //                 path: "/cabinetService",
+    //                 path: "cabinetService",
     //                 hidden: false,
     //                 redirect: "noRedirect",
-    //                 component: Layout,
+    //                 // component: Layout,
     //                 alwaysShow: true,
     //                 meta: {
     //                     title: "刀具柜服务",
@@ -245,7 +245,7 @@ export const constantRoutes = [
 
     //     ]
     // },
-    // 取还收刀信息
+    // 取还收刀信息 - 班组长
     // {
     //     name: "BorrowReturnInfo",
     //     path: "/borrowReturnInfo",
