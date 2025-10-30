@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div>出入库统计</div>
+    <!-- <div>出入库统计</div> -->
     
     <!-- 顶部查询条件区域 -->
     <div class="topSearchDiv">

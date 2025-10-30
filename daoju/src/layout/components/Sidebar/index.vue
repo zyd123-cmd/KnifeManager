@@ -67,6 +67,11 @@ function filterRoutesByRole(routes, role) {
   console.log('过滤路由 - 输入路由:', routes)
 
   const roleRouteMap = {
+    // 班组长角色暂时不限制路由，视为管理员
+    'headman': [
+      'ToolManagement',        // 工具管理
+      'DataReportStatistics'     // 数据报表统计
+    ],  
      // 操作员只能看到借出管理模块
     'operator': [
       'ToolManagement',        // 工具管理
