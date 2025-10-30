@@ -1,4 +1,4 @@
-import {createWebHistory, createRouter} from 'vue-router'
+import { createWebHistory, createRouter } from 'vue-router'
 /* Layout */
 import Layout from '@/layout'
 
@@ -66,7 +66,7 @@ export const constantRoutes = [
                 path: '/index',
                 component: () => import('@/views/index'),
                 name: 'Index',
-                meta: {title: '首页', icon: 'dashboard', affix: true}
+                meta: { title: '首页', icon: 'dashboard', affix: true }
             }
         ]
     },
@@ -80,171 +80,379 @@ export const constantRoutes = [
                 path: 'profile/:activeTab?',
                 component: () => import('@/views/system/user/profile/index'),
                 name: 'Profile',
-                meta: {title: '个人中心', icon: 'user'}
+                meta: { title: '个人中心', icon: 'user' }
             }
         ]
     },
     // 库存管理 - 班组长
-    // {
-    //     name: "ToolManagement",
-    //     path: "/toolManagement",
-    //     hidden: false,
-    //     redirect: "noRedirect",
-    //     component: Layout,
-    //     alwaysShow: true,
-    //     meta: {
-    //         title: "库存",
-    //         icon: "system",
-    //         noCache: false,
-    //         link: null,
-    //     },
-    //     children: [
-    //         // 刀头管理
-    //         {
-    //             name: "DaoTouManagement",
-    //             path: "daoTouManagement",
-    //             hidden: false,
-    //             component: () => import('@/views/toolManagement/daoTouManagement/index'),
-    //             meta: {
-    //                 title: "刀头管理",
-    //                 icon: "system",
-    //                 noCache: false,
-    //                 link: null
-    //             }
-    //         },
-    //         // 刀柄管理
-    //         {
-    //             name: "DaoBingManagement",
-    //             path: "daoBingManagement",
-    //             hidden: false,
-    //             component: () => import('@/views/toolManagement/daoBingManagement/index'),
-    //             meta: {
-    //                 title: "刀柄管理",
-    //                 icon: "system",
-    //                 noCache: false,
-    //                 link: null
-    //             }
-    //         },
-    //         // 品牌管理
-    //         {
-    //             name: "BrandInfo",
-    //             path: "brandInfo",
-    //             hidden: false,
-    //             component: () => import('@/views/consumableService/brandInfo/index.vue'),
-    //             meta: {
-    //                 title: "品牌信息",
-    //                 icon: "star",
-    //                 noCache: false,
-    //                 link: null
-    //             }
-    //         },
-    //         // 预警警告
-    //         {
-    //             name: "AlarmWarningValve",
-    //             path: "index",
-    //             hidden: false,
-    //             component: () => import('@/views/alarmWarning/index.vue'),
-    //             meta: {
-    //                 title: "预警阀值设置",
-    //                 icon: "warning",
-    //                 noCache: false,
-    //                 link: null
-    //             }
-    //         },
-    //         // 刀具类型管理
-    //         {
-    //             name: "CutterType",
-    //             path: "cutterType",
-    //             hidden: false,
-    //             component: () => import('@/views/dataDictionary/cutterType/index.vue'),
-    //             meta: {
-    //                 title: "刀具类型管理",
-    //                 icon: "tools",
-    //                 noCache: false,
-    //                 link: null
-    //             }
-    //         },    
-    //         //刀具柜管理
-    //         {
-    //                 name: "CabinetService",
-    //                 path: "cabinetService",
-    //                 hidden: false,
-    //                 redirect: "noRedirect",
-    //                 // component: Layout,
-    //                 alwaysShow: true,
-    //                 meta: {
-    //                     title: "刀具柜服务",
-    //                     icon: "box",
-    //                     noCache: false,
-    //                     link: null,
-    //                 },
-    //                 children: [
-    //                     // {
-    //                     //     name: "CabinetManagement",
-    //                     //     path: "cabinetManagement",
-    //                     //     hidden: false,
-    //                     //     component: () => import('@/views/cabinetService/cabinetManagement/index'),
-    //                     //     meta: {
-    //                     //         title: "刀具柜管理",
-    //                     //         icon: "grid",
-    //                     //         noCache: false,
-    //                     //         link: null
-    //                     //     }
-    //                     // },
-    //                     // 刀柜货道管理
-    //                     {
-    //                     name: "CollectCabinet",
-    //                     path: "collectCabinet",
-    //                     hidden: false,
-    //                     component: () => import('@/views/cabinetChannel/collectCabinet/index'),
-    //                     meta: {
-    //                         title: "收刀柜",
-    //                         icon: "box",
-    //                         noCache: false,
-    //                         link: null
-    //                     }
-    //                 },
-    //                 {
-    //                     name: "TakeCabinet",
-    //                     path: "takeCabinet",
-    //                     hidden: false,
-    //                     component: () => import('@/views/cabinetChannel/takeCabinet/index'),
-    //                     meta: {
-    //                         title: "取刀柜",
-    //                         icon: "shopping-cart",
-    //                         noCache: false,
-    //                         link: null
-    //                     }
-    //                 },
-    //                 {
-    //                     name: "HandleCabinet",
-    //                     path: "handleCabinet",
-    //                     hidden: false,
-    //                     component: () => import('@/views/cabinetChannel/handleCabinet/index.vue'),
-    //                     meta: {
-    //                         title: "刀柄柜",
-    //                         icon: "tools",
-    //                         noCache: false,
-    //                         link: null
-    //                     }
-    //                 },
-    //                 {
-    //                     name: "CollectHandleCabinet",
-    //                     path: "collectHandleCabinet",
-    //                     hidden: false,
-    //                     component: () => import('@/views/cabinetChannel/collectHandleCabinet/index.vue'),
-    //                     meta: {
-    //                         title: "收刀柄柜",
-    //                         icon: "box",
-    //                         noCache: false,
-    //                         link: null
-    //                     }
-    //                 },
-    //                 ]
-    //             },
+    {
+        name: "ToolManagement",
+        path: "/toolManagement",
+        hidden: false,
+        redirect: "noRedirect",
+        component: Layout,
+        alwaysShow: true,
+        meta: {
+            title: "库存管理",
+            icon: "system",
+            noCache: false,
+            link: null,
+        },
+        children: [
+            // 刀具管理
+            {
+                name: "DaoTouManagement",
+                path: "daoTouManagement",
+                hidden: false,
+                component: () => import('@/views/toolManagement/daoTouManagement/index'),
+                meta: {
+                    title: "刀具管理",
+                    icon: "system",
+                    noCache: false,
+                    link: null
+                }
+            },
+            // 刀柄管理
+            {
+                name: "DaoBingManagement",
+                path: "daoBingManagement",
+                hidden: false,
+                component: () => import('@/views/toolManagement/daoBingManagement/index'),
+                meta: {
+                    title: "刀柄管理",
+                    icon: "system",
+                    noCache: false,
+                    link: null
+                }
+            },
+            // 品牌管理
+            {
+                name: "BrandInfo",
+                path: "brandInfo",
+                hidden: false,
+                // component: Layout,
+                redirect: "noRedirect",
+                alwaysShow: true,
+                meta: {
+                    title: "品牌管理",
+                    icon: "star",
+                    noCache: false,
+                    link: null
+                },
+                children: [
+                    {
+                        name: "ToolholderBrand",
+                        path: "toolholderBrand",
+                        hidden: false,
+                        component: () => import('@/views/consumableService/brandInfo/ToolholderBrand.vue'),
+                        meta: {
+                            title: "刀具品牌",
+                            icon: "box",
+                            noCache: false,
+                            link: null
+                        }
+                    },
+                    {
+                        name: "CuttingToolBrand",
+                        path: "cuttingToolBrand",
+                        hidden: false,
+                        component: () => import('@/views/consumableService/brandInfo/CuttingToolBrand.vue'),
+                        meta: {
+                            title: "刀柄品牌",
+                            icon: "box",
+                            noCache: false,
+                            link: null
+                        }
+                    },
+                ],
+            },
+            // 预警警告
+            {
+                name: "AlarmWarningValve",
+                path: "index",
+                hidden: false,
+                component: () => import('@/views/alarmWarning/index.vue'),
+                meta: {
+                    title: "预警阀值设置",
+                    icon: "warning",
+                    noCache: false,
+                    link: null
+                }
+            },
+            // 刀具类型管理
+            {
+                name: "CutterType",
+                path: "cutterType",
+                hidden: false,
+                component: () => import('@/views/dataDictionary/cutterType/index.vue'),
+                meta: {
+                    title: "刀具类型管理",
+                    icon: "tools",
+                    noCache: false,
+                    link: null
+                }
+            },
+            //刀具柜管理
+            {
+                name: "CabinetService",
+                path: "cabinetService",
+                hidden: false,
+                redirect: "noRedirect",
+                alwaysShow: true,
+                meta: {
+                    title: "刀具柜管理",
+                    icon: "box",
+                    noCache: false,
+                    link: null,
+                },
+                children: [
+                    // 收刀柜货道管理
+                    {
+                        name: "CollectCabinet",
+                        path: "collectCabinet",
+                        hidden: false,
+                        redirect: "noRedirect",
+                        alwaysShow: true,
+                        meta: {
+                            title: "收刀具柜管理",
+                            icon: "box",
+                            noCache: false,
+                            link: null
+                        },
+                        children: [
+                            {
+                                name: "CollectCutterChannelManage",
+                                path: "collectCutterChannelManage",
+                                hidden: false,
+                                component: () => import('@/views/cabinetChannel/collectCabinet/CollectCutterChannelManage.vue'),
+                                meta: {
+                                    title: "收刀具柜货道管理",
+                                    icon: "box",
+                                    noCache: false,
+                                    link: null
+                                }
+                            },
+                        ],
+                    },
+                    // 取刀柜货道管理
+                    {
+                        name: "TakeCabinet",
+                        path: "takeCabinet",
+                        hidden: false,
+                        alwaysShow: true,                       
+                        meta: {
+                            title: "取刀具柜管理",
+                            icon: "shopping-cart",
+                            noCache: false,
+                            link: null
+                        },
+                        children: [
+                            {
+                                name: "CollectToolHolderChannelManage",
+                                path: "CollectToolHolderChannelManage",
+                                hidden: false,
+                                component: () => import('@/views/cabinetChannel/takeCabinet/CollectToolHolderChannelManage.vue'),
+                                meta: {
+                                    title: "取刀具柜货道管理",
+                                    icon: "box",
+                                    noCache: false,
+                                    link: null
+                                }
+                            },
+                        ],
 
-    //     ]
-    // },
+                    },
+                    {
+                        name: "HandleCabinet",
+                        path: "handleCabinet",
+                        hidden: false,
+                        component: () => import('@/views/cabinetChannel/handleCabinet/index.vue'),
+                        meta: {
+                            title: "收刀柄柜管理",
+                            icon: "tools",
+                            noCache: false,
+                            link: null
+                        }
+                    },
+                    {
+                        name: "CollectHandleCabinet",
+                        path: "collectHandleCabinet",
+                        hidden: false,
+                        component: () => import('@/views/cabinetChannel/collectHandleCabinet/index.vue'),
+                        meta: {
+                            title: "取刀柄柜管理",
+                            icon: "box",
+                            noCache: false,
+                            link: null
+                        }
+                    },
+                ]
+            },
+
+        ]
+    },
+    {
+        name: "DataReportStatistics",
+        path: "/dataReportStatistics",
+        hidden: false,
+        redirect: "noRedirect",
+        alwaysShow: true,
+        component: Layout,
+        meta: {
+            title: "数据报表统计",
+            icon: "data-line",
+            noCache: false,
+            link: null
+        },
+        children: [
+            // 系统统计-班组长
+            {
+                name: "ReportSystemStatistics",
+                path: "ReportSystemStatistics",
+                hidden: false,
+                redirect: "noRedirect",
+                alwaysShow: true,
+                meta: {
+                    title: "系统统计",
+                    icon: "data-line",
+                    noCache: false,
+                    link: null,
+                },
+                children: [
+                    {
+                        name: "ReportStockRecord",
+                        path: "reportStockRecord",
+                        hidden: false,
+                        component: () => import('@/views/historyRecord/stockRecord/index'),
+                        meta: {
+                            title: "出入库统计",
+                            icon: "box",
+                            noCache: false,
+                            link: null
+                        }
+                    },
+                    {
+                        name: "ReportYearlyUsageStatistics",
+                        path: "reportYearlyUsageStatistics",
+                        hidden: false,
+                        component: () => import('@/views/borrowReturnInfo/YearlyUsageStatistics/index.vue'),
+                        meta: {
+                            title: "刀具消耗统计",
+                            icon: "data-line",
+                            noCache: false,
+                            link: null
+                        }
+                    },
+
+                    {
+                        name: "ReportTotalInventoryStats",
+                        path: "reportTotalInventoryStats",
+                        hidden: false,
+                        component: () => import('@/views/borrowReturnInfo/totalInventoryStats/index.vue'),
+                        meta: {
+                            title: "总库存统计",
+                            icon: "data-analysis",
+                            noCache: false,
+                            link: null
+                        }
+                    },
+
+                    {
+                        name: "ReportRestockRecord",
+                        path: "restockRecord",
+                        hidden: false,
+                        component: () => import('@/views/historyRecord/restockRecord/index'),
+                        meta: {
+                            title: "货道库存统计",
+                            icon: "goods",
+                            noCache: false,
+                            link: null
+                        }
+                    },
+
+                    {
+                        name: "ReportScrapKnifeCollectionStatistics",
+                        path: "reportScrapKnifeCollectionStatistics",
+                        hidden: false,
+                        component: () => import('@/views/borrowReturnInfo/ScrapKnifeCollectionStatistics/index'),
+                        meta: {
+                            title: "废刀回收统计",
+                            icon: "data-line",
+                            noCache: false,
+                            link: null
+                        }
+                    },
+                ]
+            },
+            // 系统记录-班组长
+            {
+                name: "ReportSystemRecord",
+                path: "reportsystemRecord",
+                hidden: false,
+                redirect: "noRedirect",
+                alwaysShow: true,
+                meta: {
+                    title: "系统记录",
+                    icon: "document",
+                    noCache: false,
+                    link: null,
+                },
+                children: [
+                    {
+                        name: "ReportReplenishmentRecord",
+                        path: "reportReplenishmentRecord",
+                        hidden: false,
+                        component: () => import('@/views/ReplenishmentRecord/index.vue'),
+                        meta: {
+                            title: "补货记录",
+                            icon: "goods",
+                            noCache: false,
+                            link: null
+                        }
+                    },
+
+                    {
+                        name: "ReportLendRecord",
+                        path: "reportLendRecord",
+                        hidden: false,
+                        component: () => import('@/views/historyRecord/lendRecord/index'),
+                        meta: {
+                            title: "领用领出记录",
+                            icon: "document",
+                            noCache: false,
+                            link: null
+                        }
+                    },
+
+                    {
+                        name: "ReportPublicStorage",
+                        path: "reportpublicStorage",
+                        hidden: false,
+                        component: () => import('@/views/historyRecord/publicStorage/index'),
+                        meta: {
+                            title: "暂存记录",
+                            icon: "files",
+                            noCache: false,
+                            link: null
+                        }
+                    },
+
+                    {
+                        name: "ReportAlarmWarning",
+                        path: "reportindex",
+                        hidden: false,
+                        component: () => import('@/views/alarmWarning/index.vue'),
+                        meta: {
+                            title: "预警警告",
+                            icon: "warning",
+                            noCache: false,
+                            link: null
+                        }
+                    },
+                ]
+            },
+        ]
+    },
     // 取还收刀信息 - 班组长
     // {
     //     name: "BorrowReturnInfo",
@@ -343,7 +551,7 @@ export const constantRoutes = [
             }
         ]
     },
-    
+
     {
         name: "ProductOrder",
         path: "/productOrder",
@@ -374,7 +582,7 @@ export const constantRoutes = [
     },
     // 管理员管理
     {
-        name:"AdminManagement",
+        name: "AdminManagement",
         path: "/adminManagement",
         hidden: false,
         component: Layout,
@@ -445,7 +653,7 @@ export const constantRoutes = [
     },
     // 审计员管理
     {
-        name:"AuditorManagement",
+        name: "AuditorManagement",
         path: "/auditorManagement",
         hidden: false,
         component: Layout,
@@ -472,97 +680,8 @@ export const constantRoutes = [
             }
         ]
     },
-                // {
-            //     name: "CabinetChannelStats",
-            //     path: "cabinetChannelStats",
-            //     hidden: false,
-            //     redirect: "noRedirect",
-            //     meta: {
-            //         title: "刀柜货道",
-            //         icon: "grid",
-            //         noCache: false,
-            //         link: null
-            //     },
-            //     children: [
-            //         {
-            //             name: "CollectCabinet",
-            //             path: "collectCabinet",
-            //             hidden: false,
-            //             component: () => import('@/views/cabinetChannel/collectCabinet/index'),
-            //             meta: {
-            //                 title: "收刀柜",
-            //                 icon: "box",
-            //                 noCache: false,
-            //                 link: null
-            //             }
-            //         },
-            //         {
-            //             name: "TakeCabinet",
-            //             path: "takeCabinet",
-            //             hidden: false,
-            //             component: () => import('@/views/cabinetChannel/takeCabinet/index'),
-            //             meta: {
-            //                 title: "取刀柜",
-            //                 icon: "shopping-cart",
-            //                 noCache: false,
-            //                 link: null
-            //             }
-            //         },
-            //         {
-            //             name: "HandleCabinet",
-            //             path: "handleCabinet",
-            //             hidden: false,
-            //             component: () => import('@/views/cabinetChannel/handleCabinet/index.vue'),
-            //             meta: {
-            //                 title: "刀柄柜",
-            //                 icon: "tools",
-            //                 noCache: false,
-            //                 link: null
-            //             }
-            //         },
-            //         {
-            //             name: "CollectHandleCabinet",
-            //             path: "collectHandleCabinet",
-            //             hidden: false,
-            //             component: () => import('@/views/cabinetChannel/collectHandleCabinet/index.vue'),
-            //             meta: {
-            //                 title: "收刀柄柜",
-            //                 icon: "box",
-            //                 noCache: false,
-            //                 link: null
-            //             }
-            //         }
-            //     ]
-            // }
-    // {
-    //     name: "BrandManagement",
-    //     path: "/brandManagement",
-    //     hidden: false,
-    //     component: Layout,
-    //     redirect: "/brandManagement/brandInfo",
-    //     meta: {
-    //         title: "品牌管理",
-    //         icon: "star",
-    //         noCache: false,
-    //         link: null,
-    //     },
-    //     children: [
-            //             {
-            //     name: "BrandInfo",
-            //     path: "brandInfo",
-            //     hidden: false,
-            //     component: () => import('@/views/consumableService/brandInfo/index.vue'),
-            //     meta: {
-            //         title: "品牌信息",
-            //         icon: "star",
-            //         noCache: false,
-            //         link: null
-            //     }
-            // },
-    //     ]
-    // }
 
- 
+
     // 耗材服务
     // {
     //     name: "ConsumableService",
@@ -604,7 +723,7 @@ export const constantRoutes = [
     //         },
     //     ]
     // },
-,
+    ,
     // 刀具类型管理
     // {
     //     name: "CutterTypeManagement",
@@ -830,7 +949,7 @@ export const constantRoutes = [
                     link: null
                 }
             },
-            
+
             {
                 name: "YearlyQuantityStatistics",
                 path: "yearlyQuantityStatistics",
@@ -1138,7 +1257,7 @@ export const dynamicRoutes = [
                 path: 'role/:userId(\\d+)',
                 component: () => import('@/views/system/user/authRole'),
                 name: 'AuthRole',
-                meta: {title: '分配角色', activeMenu: '/system/user'}
+                meta: { title: '分配角色', activeMenu: '/system/user' }
             }
         ]
     }
@@ -1152,7 +1271,7 @@ const router = createRouter({
         if (savedPosition) {
             return savedPosition
         }
-        return {top: 0}
+        return { top: 0 }
     },
 })
 

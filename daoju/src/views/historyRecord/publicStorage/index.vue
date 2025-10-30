@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div>暂存记录</div>
+    <!-- <div>暂存记录</div> -->
     
     <!-- 顶部查询条件区域 -->
     <div class="topSearchDiv">

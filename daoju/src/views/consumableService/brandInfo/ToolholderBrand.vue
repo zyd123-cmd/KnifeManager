@@ -1,12 +1,7 @@
 <template>
   <div class="container">
-    <!-- 类型切换选择器 -->
-    <div class="typeSelector">
-      <el-radio-group v-model="brandType" @change="handleTypeChange" size="large">
-        <el-radio-button label="toolholder" :border="false">刀柄品牌</el-radio-button>
-        <el-radio-button label="cuttingTool" :border="false">刀具品牌</el-radio-button>
-      </el-radio-group>
-    </div>
+    <!-- 页面标题 -->
+    <div class="page-title">刀柄品牌管理</div>
 
     <!-- 顶部查询条件区域 -->
     <div class="topSearchDiv">
@@ -59,9 +54,7 @@
 
     <!-- 操作按钮区域 -->
     <div class="buttonDiv">
-      <el-button type="primary" icon="plus" @click="openAddDialog">
-        新增{{ brandType === 'toolholder' ? '刀柄' : '刀具' }}品牌
-      </el-button>
+      <el-button type="primary" icon="plus" @click="openAddDialog">新增刀柄品牌</el-button>
     </div>
 
     <!-- 中部表格显示品牌信息 -->
@@ -77,13 +70,6 @@
         <el-table-column prop="id" label="品牌ID" align="center" width="100"/>
         <el-table-column prop="brandCode" label="品牌编码" align="center" width="120"/>
         <el-table-column prop="brandName" label="品牌名称" align="center" width="150"/>
-        <el-table-column prop="type" label="类型" align="center" width="120">
-          <template #default="scope">
-            <el-tag :type="scope.row.type === 'toolholder' ? 'info' : 'warning'">
-              {{ scope.row.type === 'toolholder' ? '刀柄品牌' : '刀具品牌' }}
-            </el-tag>
-          </template>
-        </el-table-column>
         <el-table-column prop="corporateName" label="公司名称" align="center" width="180"/>
         <el-table-column prop="supplierName" label="供应商名称" align="center" width="150"/>
         <el-table-column prop="supplierUser" label="供应商联系人" align="center" width="120"/>
@@ -105,7 +91,7 @@
           </template>
         </el-table-column>
         <!-- 操作 -->
-        <el-table-column label="操作" align="center" width="200">
+        <el-table-column label="操作" align="center" width="200" fixed="right">
           <template #default="scope">
             <div class="operation-buttons">
               <el-button type="default" size="small" @click="handleDetail(scope.row)">详情</el-button>
@@ -132,7 +118,7 @@
     <!-- 详情对话框 -->
     <el-dialog
       v-model="detailDialogVisible"
-      :title="brandType === 'toolholder' ? '刀柄品牌详情' : '刀具品牌详情'"
+      title="刀柄品牌详情"
       width="800px"
       :close-on-click-modal="false"
     >
@@ -143,9 +129,7 @@
           <el-descriptions-item label="品牌编码">{{ currentBrand.brandCode }}</el-descriptions-item>
           <el-descriptions-item label="品牌名称">{{ currentBrand.brandName }}</el-descriptions-item>
           <el-descriptions-item label="类型">
-            <el-tag :type="currentBrand.type === 'toolholder' ? 'info' : 'warning'">
-              {{ currentBrand.type === 'toolholder' ? '刀柄品牌' : '刀具品牌' }}
-            </el-tag>
+            <el-tag type="info">刀柄品牌</el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="公司名称">{{ currentBrand.corporateName }}</el-descriptions-item>
           <el-descriptions-item label="供应商名称">{{ currentBrand.supplierName }}</el-descriptions-item>
@@ -184,7 +168,7 @@
     <!-- 新增品牌对话框 -->
     <el-dialog
       v-model="addDialogVisible"
-      :title="brandType === 'toolholder' ? '新增刀柄品牌' : '新增刀具品牌'"
+      title="新增刀柄品牌"
       width="800px"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
@@ -301,7 +285,7 @@
     <!-- 修改品牌对话框 -->
     <el-dialog
       v-model="editDialogVisible"
-      :title="brandType === 'toolholder' ? '修改刀柄品牌' : '修改刀具品牌'"
+      title="修改刀柄品牌"
       width="800px"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
@@ -421,9 +405,6 @@
 import { reactive, ref, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
-// 品牌类型切换（刀柄/刀具）
-const brandType = ref('toolholder') // toolholder=刀柄品牌，cuttingTool=刀具品牌
-
 // 表单引用
 const formInlineRes = ref()
 const addFormRef = ref()
@@ -458,7 +439,7 @@ const queryParams = reactive({
   createUser: '',
   createTimeStart: '',
   createTimeEnd: '',
-  type: 'toolholder' // 默认查询刀柄品牌
+  type: 'toolholder' // 固定为刀柄品牌
 })
 
 // 表格数据
@@ -475,7 +456,7 @@ const currentBrand = ref(null)
 
 // 新增表单数据
 const addForm = reactive({
-  type: 'toolholder', // 默认为刀柄品牌
+  type: 'toolholder', // 固定为刀柄品牌
   brandCode: '',
   brandName: '',
   corporateName: '',
@@ -495,7 +476,7 @@ const addForm = reactive({
 // 修改表单数据
 const editForm = reactive({
   id: null,
-  type: 'toolholder', // 默认为刀柄品牌
+  type: 'toolholder', // 固定为刀柄品牌
   brandCode: '',
   brandName: '',
   corporateName: '',
@@ -549,7 +530,7 @@ const editFormRules = reactive({
 const supplierList = ref([])
 const corporateList = ref([])
 
-// 模拟数据（包含类型区分）
+// 刀柄品牌模拟数据
 const mockData = [
   {
     id: 1,
@@ -570,24 +551,6 @@ const mockData = [
     updateUser: '王主管'
   },
   {
-    id: 2,
-    type: 'cuttingTool', // 刀具品牌
-    brandCode: 'CT002',
-    brandName: '山特维克刀具',
-    corporateName: '山特维克集团',
-    createDept: '采购部',
-    createTime: '2024-12-21 10:15:00',
-    createUser: '赵采购',
-    isDeleted: 0,
-    phone: '010-87654321',
-    status: 'active',
-    supplierName: '北京山特维克工具有限公司',
-    supplierUser: '陈经理',
-    tenantId: 'T001',
-    updateTime: '2024-12-26 16:45:00',
-    updateUser: '刘主管'
-  },
-  {
     id: 3,
     type: 'toolholder', // 刀柄品牌
     brandCode: 'TH003',
@@ -604,24 +567,6 @@ const mockData = [
     tenantId: 'T001',
     updateTime: '2024-12-24 09:20:00',
     updateUser: '吴主管'
-  },
-  {
-    id: 4,
-    type: 'cuttingTool', // 刀具品牌
-    brandCode: 'CT004',
-    brandName: '伊斯卡刀具',
-    corporateName: '伊斯卡金属加工有限公司',
-    createDept: '采购部',
-    createTime: '2024-12-23 14:20:00',
-    createUser: '郑采购',
-    isDeleted: 0,
-    phone: '020-65432109',
-    status: 'active',
-    supplierName: '广州伊斯卡工具有限公司',
-    supplierUser: '林经理',
-    tenantId: 'T001',
-    updateTime: '2024-12-27 10:10:00',
-    updateUser: '黄主管'
   }
 ]
 
@@ -632,9 +577,6 @@ const getList = async () => {
     // 模拟API调用
     setTimeout(() => {
       let filteredData = [...mockData]
-
-      // 按类型筛选（核心）
-      filteredData = filteredData.filter(item => item.type === queryParams.type)
 
       // 按品牌编码筛选
       if (queryParams.brandCode) {
@@ -702,7 +644,6 @@ const onSubmit = () => {
   queryParams.supplierName = formInline.supplierName
   queryParams.status = formInline.status
   queryParams.createUser = formInline.createUser
-  queryParams.type = brandType.value // 关键：同步类型参数
 
   // 处理时间范围
   if (formInline.createTime && formInline.createTime.length === 2) {
@@ -724,7 +665,7 @@ const reFreshForm = (formInlineRes) => {
   Object.keys(queryParams).forEach(key => {
     queryParams[key] = ''
   })
-  queryParams.type = brandType.value // 保留当前类型
+  queryParams.type = 'toolholder' // 保持为刀柄品牌
   pagination.current = 1
   getList()
 }
@@ -746,7 +687,7 @@ const handleEdit = (row) => {
   if (editData) {
     Object.assign(editForm, {
       id: editData.id,
-      type: editData.type, // 保留原类型
+      type: 'toolholder', // 固定为刀柄品牌
       brandCode: editData.brandCode || '',
       brandName: editData.brandName || '',
       corporateName: editData.corporateName || '',
@@ -770,7 +711,7 @@ const handleEdit = (row) => {
 
 // 删除单个品牌
 const handleDelete = (row) => {
-  ElMessageBox.confirm(`确定要删除${row.type === 'toolholder' ? '刀柄' : '刀具'}品牌 "${row.brandName}" 吗？`, '确认删除', {
+  ElMessageBox.confirm(`确定要删除刀柄品牌 "${row.brandName}" 吗？`, '确认删除', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
@@ -792,7 +733,7 @@ const handleDelete = (row) => {
 // 打开新增对话框
 const openAddDialog = () => {
   resetAddForm()
-  addForm.type = brandType.value // 设置为当前选中类型
+  addForm.type = 'toolholder' // 固定为刀柄品牌
   addDialogVisible.value = true
 }
 
@@ -867,7 +808,7 @@ const submitAddForm = async () => {
     const submitData = {
       ...addForm,
       id: Date.now(), // 模拟ID
-      type: brandType.value, // 关键：使用当前选中的类型
+      type: 'toolholder', // 固定为刀柄品牌
       createUser: '当前用户',
       updateUser: '当前用户',
       createTime: new Date().toISOString().replace('T', ' ').substring(0, 19),
@@ -879,7 +820,7 @@ const submitAddForm = async () => {
     // 模拟API调用
     setTimeout(() => {
       mockData.push(submitData)
-      console.log('新增品牌数据:', submitData)
+      console.log('新增刀柄品牌数据:', submitData)
       ElMessage.success('新增成功!')
       closeAddDialog()
       getList() // 刷新列表
@@ -940,7 +881,7 @@ const submitEditForm = async () => {
         Object.assign(mockData[index], submitData)
       }
 
-      console.log('修改品牌数据:', submitData)
+      console.log('修改刀柄品牌数据:', submitData)
       ElMessage.success('修改成功!')
       closeEditDialog()
       getList() // 刷新列表
@@ -952,13 +893,6 @@ const submitEditForm = async () => {
   } finally {
     editLoading.value = false
   }
-}
-
-// 处理类型切换
-const handleTypeChange = () => {
-  queryParams.type = brandType.value
-  pagination.current = 1
-  getList()
 }
 
 // 组件挂载时初始化
@@ -975,13 +909,13 @@ onMounted(() => {
   padding: 0;
   margin: 0;
 
-  // 类型选择器样式
-  .typeSelector {
-    width: 100%;
-    margin: 15px 0;
-    padding: 0 20px;
-    background: #fff;
-    padding-top: 10px;
+  .page-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #303133;
+    margin: 15px 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e4e7ed;
   }
 
   .topSearchDiv {
@@ -1029,11 +963,6 @@ onMounted(() => {
 
 :deep(.el-descriptions__label) {
   font-weight: 600;
-}
-
-:deep(.el-radio-button__inner) {
-  padding: 8px 20px;
-  font-size: 14px;
 }
 
 .detail-container {
