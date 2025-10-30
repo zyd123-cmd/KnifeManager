@@ -134,6 +134,13 @@ const roleOptions = ref([
     description: '负责刀具借出管理操作',
     icon: 'User'
   },
+  // 新增 headman 角色，UI 与 operator 完全一致
+  {
+    value: 'headman',
+    label: '班组长', // 可根据需求修改角色名称
+    description: '负责小组刀具管理及人员协调', // 可根据需求修改角色描述
+    icon: 'User' // 复用 operator 的 User 图标，保证 UI 一致
+  },
   {
     value: 'admin',
     label: '管理员',
@@ -218,6 +225,7 @@ function validateUserRole(username, role) {
 function getRoleName(roleValue) {
   const roleMap = {
     'operator': '操作员',
+    'headman': '班组长', // 与角色选项中的label保持一致
     'admin': '管理员',
     'auditor': '审计员'
   }
@@ -237,6 +245,22 @@ function getRolePermissions(role) {
       'consumableService:*',     // 耗材服务完整权限
       'systemStatistics:*',      // 系统统计完整权限
       'systemRecord:*'           // 系统记录完整权限
+    ],
+    // 新增headman权限：admin权限 + auditor权限
+    'headman': [
+      // admin的核心业务权限
+      'borrowManagement:*',
+      'brandManagement:*',
+      'alarmWarning:*',
+      'cutterTypeManagement:*',
+      'cabinetChannel:*',
+      'consumableService:*',
+      'systemStatistics:*',
+      'systemRecord:*',
+      // auditor的审计权限
+      'borrowReturnInfo:view',
+      'dataDictionary:view',
+      'historyRecord:view'
     ],
     'auditor': [
       'borrowReturnInfo:view',   // 取还收刀信息查看权限
