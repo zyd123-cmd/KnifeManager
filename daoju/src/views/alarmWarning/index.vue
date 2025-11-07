@@ -3,6 +3,16 @@
     <!-- 顶部查询条件区域 -->
     <div class="topSearchDiv">
       <el-form :inline="true" :model="searchForm" ref="searchFormRef" class="demo-form-inline">
+        <el-form-item label="货道:" prop="locSurplus">
+          <el-select v-model="searchForm.locSurplus" placeholder="请选择货道" clearable>
+            <el-option
+              v-for="item in 80"
+              :key="item"
+              :label="`货道 ${item}`"
+              :value="item"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="预警等级:" prop="alarmLevel">
           <el-select v-model="searchForm.alarmLevel" placeholder="请选择预警等级" clearable>
             <el-option label="安全库存量预警" :value="1"/>
@@ -53,22 +63,12 @@
     <!-- 统计卡片区域 -->
     <div class="statsCardsDiv" v-if="statisticsData">
       <el-row :gutter="20">
-        <el-col :span="6">
+        <el-col :span="12">
           <el-card class="stats-card level-1">
             <el-statistic title="安全库存量预警" :value="statisticsData.level1Count" />
           </el-card>
         </el-col>
-        <el-col :span="6">
-          <el-card class="stats-card level-2">
-            <el-statistic title="采集阈值存储量预警" :value="statisticsData.level2Count" />
-          </el-card>
-        </el-col>
-        <el-col :span="6">
-          <el-card class="stats-card level-3">
-            <el-statistic title="紧急补货存储量报警" :value="statisticsData.level3Count" />
-          </el-card>
-        </el-col>
-        <el-col :span="6">
+        <el-col :span="12">
           <el-card class="stats-card total">
             <el-statistic title="未处理预警总数" :value="statisticsData.unhandledCount" />
           </el-card>
@@ -94,6 +94,7 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="60" align="center"/>
+        <el-table-column prop="locSurplus" label="货道" align="center" width="100"/>
         <el-table-column prop="id" label="预警ID" align="center" width="100"/>
         <el-table-column prop="alarmLevel" label="预警等级" align="center" width="150">
           <template #default="scope">
@@ -203,8 +204,8 @@
     <!-- 阈值设置对话框 -->
     <el-dialog
       v-model="thresholdDialogVisible"
-      title="预警阈值设置"
-      width="900px"
+      title="阈值设置"
+      width="700px"
       :close-on-click-modal="false"
       class="threshold-dialog"
       top="80px"
@@ -214,126 +215,59 @@
       <div class="threshold-content">
         <!-- 阈值设置表单 -->
         <div class="threshold-settings-section">
-          <el-form :model="thresholdForm" :rules="thresholdRules" ref="thresholdFormRef" label-width="140px">
+          <el-form :model="thresholdForm" :rules="thresholdRules" ref="thresholdFormRef" label-width="90px">
             <el-row :gutter="20">
               <el-col :span="12">
-                <el-card class="setting-card level-1-setting" shadow="never">
+                <el-card class="setting-card channel-setting" shadow="never">
                   <div class="setting-header">
-                    <el-icon class="setting-icon"><SuccessFilled /></el-icon>
-                    <span class="setting-title">安全库存量预警</span>
+                    <el-icon class="setting-icon"><DataLine /></el-icon>
+                    <span class="setting-title">货道</span>
                   </div>
-                  <el-form-item label="预警阈值:" prop="level1Threshold">
-                    <el-input-number
-                      v-model="thresholdForm.level1Threshold"
-                      :min="1"
-                      :max="999"
-                      placeholder="请输入阈值"
+                  <el-form-item label="货道:" prop="locSurplus">
+                    <el-select
+                      v-model="thresholdForm.locSurplus"
+                      placeholder="请选择货道"
                       style="width: 100%"
-                    />
-                    <div class="threshold-hint">库存低于此值时触发预警</div>
+                    >
+                      <el-option
+                        v-for="item in 80"
+                        :key="item"
+                        :label="`货道 ${item}`"
+                        :value="item"
+                      />
+                    </el-select>
+                    <div class="threshold-hint">选择需要设置的货道编号（1-80）</div>
                   </el-form-item>
                 </el-card>
               </el-col>
               <el-col :span="12">
-                <el-card class="setting-card level-2-setting" shadow="never">
+                <el-card class="setting-card alarm-setting" shadow="never">
                   <div class="setting-header">
-                    <el-icon class="setting-icon"><WarningFilled /></el-icon>
-                    <span class="setting-title">采集阈值存储量预警</span>
+                    <el-icon class="setting-icon"><Bell /></el-icon>
+                    <span class="setting-title">预警阈值</span>
                   </div>
-                  <el-form-item label="预警阈值:" prop="level2Threshold">
+                  <el-form-item label="阈值:" prop="alarmThreshold">
                     <el-input-number
-                      v-model="thresholdForm.level2Threshold"
+                      v-model="thresholdForm.alarmThreshold"
                       :min="1"
-                      :max="999"
+                      :max="20"
                       placeholder="请输入阈值"
                       style="width: 100%"
                     />
-                    <div class="threshold-hint">库存达到此值时触发预警</div>
-                  </el-form-item>
-                </el-card>
-              </el-col>
-            </el-row>
-            <el-row :gutter="20">
-              <el-col :span="12">
-                <el-card class="setting-card level-3-setting" shadow="never">
-                  <div class="setting-header">
-                    <el-icon class="setting-icon"><CircleCloseFilled /></el-icon>
-                    <span class="setting-title">紧急补货存储量报警</span>
-                  </div>
-                  <el-form-item label="预警阈值:" prop="level3Threshold">
-                    <el-input-number
-                      v-model="thresholdForm.level3Threshold"
-                      :min="0"
-                      :max="999"
-                      placeholder="请输入阈值"
-                      style="width: 100%"
-                    />
-                    <div class="threshold-hint">库存低于或等于此值时触发紧急报警</div>
-                  </el-form-item>
-                </el-card>
-              </el-col>
-              <el-col :span="12">
-                <el-card class="setting-card interval-setting" shadow="never">
-                  <div class="setting-header">
-                    <el-icon class="setting-icon"><Timer /></el-icon>
-                    <span class="setting-title">自动盘存设置</span>
-                  </div>
-                  <el-form-item label="盘存间隔(分钟):" prop="inventoryInterval">
-                    <el-input-number
-                      v-model="thresholdForm.inventoryInterval"
-                      :min="1"
-                      :max="1440"
-                      placeholder="请输入间隔时间"
-                      style="width: 100%"
-                    />
-                    <div class="threshold-hint">系统自动检查库存的时间间隔</div>
+                    <div class="threshold-hint">库存低于此值时触发预警（最大值20）</div>
                   </el-form-item>
                 </el-card>
               </el-col>
             </el-row>
           </el-form>
         </div>
-
-        <!-- 预警等级说明 -->
-        <div class="warning-levels-section">
-          <el-row :gutter="15" class="warning-cards">
-            <el-col :span="8">
-              <div class="warning-card level-1">
-                <div class="card-header">
-                  <el-icon class="level-icon"><SuccessFilled /></el-icon>
-                  <span class="level-title">安全库存量预警</span>
-                </div>
-                <p class="level-desc">当库存数量低于设定值时触发，提醒及时补货</p>
-              </div>
-            </el-col>
-            <el-col :span="8">
-              <div class="warning-card level-2">
-                <div class="card-header">
-                  <el-icon class="level-icon"><WarningFilled /></el-icon>
-                  <span class="level-title">采集阈值存储量预警</span>
-                </div>
-                <p class="level-desc">当库存数量达到采集阈值时触发，提醒注意库存变化</p>
-              </div>
-            </el-col>
-            <el-col :span="8">
-              <div class="warning-card level-3">
-                <div class="card-header">
-                  <el-icon class="level-icon"><CircleCloseFilled /></el-icon>
-                  <span class="level-title">紧急补货存储量报警</span>
-                </div>
-                <p class="level-desc">当库存数量极低或为0时触发，需要紧急补货</p>
-              </div>
-            </el-col>
-          </el-row>
-        </div>
       </div>
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button size="large" @click="thresholdDialogVisible = false">取消</el-button>
+          <el-button @click="thresholdDialogVisible = false">取消</el-button>
           <el-button
             type="primary"
-            size="large"
             @click="submitThresholdSettings"
             :loading="thresholdLoading"
           >
@@ -432,6 +366,7 @@ const thresholdFormRef = ref()
 
 // 搜索表单
 const searchForm = reactive({
+  locSurplus: '',
   alarmLevel: '',
   deviceType: '',
   cabinetCode: '',
@@ -448,25 +383,17 @@ const pagination = reactive({
 
 // 阈值设置表单
 const thresholdForm = reactive({
-  level1Threshold: 10,
-  level2Threshold: 5,
-  level3Threshold: 0,
-  inventoryInterval: 60
+  locSurplus: 1,
+  alarmThreshold: 10
 })
 
 // 阈值设置表单验证规则
 const thresholdRules = reactive({
-  level1Threshold: [
-    { required: true, message: '请输入安全库存量预警阈值', trigger: 'blur' }
+  locSurplus: [
+    { required: true, message: '请选择货道', trigger: 'change' }
   ],
-  level2Threshold: [
-    { required: true, message: '请输入采集阈值存储量预警阈值', trigger: 'blur' }
-  ],
-  level3Threshold: [
-    { required: true, message: '请输入紧急补货存储量报警阈值', trigger: 'blur' }
-  ],
-  inventoryInterval: [
-    { required: true, message: '请输入自动盘存间隔时间', trigger: 'blur' }
+  alarmThreshold: [
+    { required: true, message: '请输入预警阈值', trigger: 'blur' }
   ]
 })
 
@@ -478,6 +405,7 @@ const brandList = ref([])
 const mockAlarmData = [
   {
     id: 1,
+    locSurplus: 15,
     alarmLevel: 3,
     deviceType: 'cutter',
     cabinetCode: 'CAB001',
@@ -496,6 +424,7 @@ const mockAlarmData = [
   },
   {
     id: 2,
+    locSurplus: 28,
     alarmLevel: 2,
     deviceType: 'handle',
     cabinetCode: 'HC001',
@@ -514,13 +443,14 @@ const mockAlarmData = [
   },
   {
     id: 3,
+    locSurplus: 42,
     alarmLevel: 1,
     deviceType: 'cutter',
     cabinetCode: 'CAB002',
     stockLoc: 'B02-03',
     brandName: '肯纳',
     itemCode: '880-D1200L20-03',
-    itemType: '钻头',
+    itemType: '针头',
     currentStock: 8,
     thresholdValue: 10,
     alarmMessage: '安全库存预警：库存数量低于安全库存量，建议及时补货',
@@ -532,6 +462,7 @@ const mockAlarmData = [
   },
   {
     id: 4,
+    locSurplus: 5,
     alarmLevel: 3,
     deviceType: 'handle',
     cabinetCode: 'HC002',
@@ -620,6 +551,11 @@ const getList = async () => {
       let filteredData = [...mockAlarmData]
 
       // 根据搜索条件筛选
+      if (searchForm.locSurplus !== '') {
+        filteredData = filteredData.filter(item =>
+          item.locSurplus === searchForm.locSurplus
+        )
+      }
       if (searchForm.alarmLevel !== '') {
         filteredData = filteredData.filter(item =>
           item.alarmLevel === searchForm.alarmLevel
@@ -1234,24 +1170,14 @@ onMounted(() => {
     margin-bottom: 15px;
     padding: 15px;
 
-    &.level-1-setting {
-      border-left: 3px solid #67c23a;
-      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    }
-
-    &.level-2-setting {
-      border-left: 3px solid #e6a23c;
-      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-    }
-
-    &.level-3-setting {
-      border-left: 3px solid #f56c6c;
-      background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
-    }
-
-    &.interval-setting {
+    &.channel-setting {
       border-left: 3px solid #409eff;
       background: linear-gradient(135deg, #f0f9ff 0%, #dbeafe 100%);
+    }
+
+    &.alarm-setting {
+      border-left: 3px solid #e6a23c;
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
     }
 
     .setting-header {

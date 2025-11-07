@@ -453,36 +453,6 @@ export const constantRoutes = [
             },
         ]
     },
-    // 取还收刀信息 - 班组长
-    // {
-    //     name: "BorrowReturnInfo",
-    //     path: "/borrowReturnInfo",
-    //     hidden: false,
-    //     redirect: "noRedirect",
-    //     component: Layout,
-    //     alwaysShow: true,
-    //     meta: {
-    //         title: "取还收刀信息",
-    //         icon: "refresh",
-    //         noCache: false,
-    //         link: null
-    //     },
-    //     children: [
-    //         {
-    //             name: "RankingStatistics",
-    //             path: "rankingStatistics",
-    //             hidden: false,
-    //             component: () => import('@/views/borrowReturnInfo/rankingStatistics/index'),
-    //             meta: {
-    //                 title: "排行统计",
-    //                 icon: "data-line",
-    //                 noCache: false,
-    //                 link: null
-    //             }
-    //         }
-    //     ]
-    // },
-
     // 工具管理 - 操作员
     {
         name: "BorrowManagement",
@@ -1003,19 +973,6 @@ export const constantRoutes = [
             },
 
             {
-                name: "RestockRecord",
-                path: "restockRecord",
-                hidden: false,
-                component: () => import('@/views/historyRecord/restockRecord/index'),
-                meta: {
-                    title: "货道库存统计",
-                    icon: "goods",
-                    noCache: false,
-                    link: null
-                }
-            },
-
-            {
                 name: "ScrapKnifeCollectionStatistics",
                 path: "scrapKnifeCollectionStatistics",
                 hidden: false,
@@ -1045,19 +1002,6 @@ export const constantRoutes = [
             roles: ['auditor']  // 审核员可见
         },
         children: [
-            // {
-            //     name: "RestockRecord",
-            //     path: "restockRecord",
-            //     hidden: false,
-            //     component: () => import('@/views/historyRecord/restockRecord/index'),
-            //     meta: {
-            //         title: "补货记录",
-            //         icon: "goods",
-            //         noCache: false,
-            //         link: null
-            //     }
-            // },
-
             {
                 name: "PersonnelManagementRecord",
                 path: "personnelManagementRecord",
@@ -1071,10 +1015,10 @@ export const constantRoutes = [
                 }
             },
             {
-                name: "ReplenishmentRecord",
-                path: "replenishmentRecord",
+                name: "RestockRecord",
+                path: "restockRecord",
                 hidden: false,
-                component: () => import('@/views/ReplenishmentRecord/index.vue'),
+                component: () => import('@/views/historyRecord/restockRecord/index'),
                 meta: {
                     title: "补货记录",
                     icon: "goods",
