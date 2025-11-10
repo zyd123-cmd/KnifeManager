@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div>取刀具货道管理</div>
+    <!-- <div>取刀具货道管理</div> -->
     
     <!-- 顶部查询条件区域 -->
     <div class="topSearchDiv">

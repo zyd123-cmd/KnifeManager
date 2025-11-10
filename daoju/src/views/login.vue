@@ -128,12 +128,12 @@ const loginRules = {
 
 // 角色选项配置
 const roleOptions = ref([
-  {
-    value: 'operator',
-    label: '操作员',
-    description: '负责刀具借出管理操作',
-    icon: 'User'
-  },
+  // {
+  //   value: 'operator',
+  //   label: '操作员',
+  //   description: '负责刀具借出管理操作',
+  //   icon: 'User'
+  // },
   // 新增 headman 角色，UI 与 operator 完全一致
   {
     value: 'headman',
@@ -224,7 +224,7 @@ function validateUserRole(username, role) {
 // 获取角色名称
 function getRoleName(roleValue) {
   const roleMap = {
-    'operator': '操作员',
+    // 'operator': '操作员',
     'headman': '班组长', // 与角色选项中的label保持一致
     'admin': '管理员',
     'auditor': '审计员'

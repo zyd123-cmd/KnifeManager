@@ -146,7 +146,7 @@ export const constantRoutes = [
                         hidden: false,
                         component: () => import('@/views/consumableService/brandInfo/ToolholderBrand.vue'),
                         meta: {
-                            title: "刀具品牌",
+                            title: "刀柄品牌",
                             icon: "box",
                             noCache: false,
                             link: null
@@ -158,7 +158,7 @@ export const constantRoutes = [
                         hidden: false,
                         component: () => import('@/views/consumableService/brandInfo/CuttingToolBrand.vue'),
                         meta: {
-                            title: "刀柄品牌",
+                            title: "刀具品牌",
                             icon: "box",
                             noCache: false,
                             link: null
@@ -171,7 +171,7 @@ export const constantRoutes = [
                 name: "AlarmWarningValve",
                 path: "index",
                 hidden: false,
-                component: () => import('@/views/alarmWarning/index.vue'),
+                component: () => import('@/views/alarmWarning/teamLeader.vue'),
                 meta: {
                     title: "预警阀值设置",
                     icon: "warning",
@@ -398,14 +398,15 @@ export const constantRoutes = [
                     link: null,
                 },
                 children: [
+                    
                     {
                         name: "ReportReplenishmentRecord",
                         path: "reportReplenishmentRecord",
                         hidden: false,
-                        component: () => import('@/views/ReplenishmentRecord/index.vue'),
+                        component: () => import('@/views/historyRecord/restockRecord/index'),
                         meta: {
                             title: "补货记录",
-                            icon: "goods",
+                            icon: "goods",·
                             noCache: false,
                             link: null
                         }

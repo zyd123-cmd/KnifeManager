@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <!-- 页面标题 -->
-    <div class="page-title">刀具品牌管理</div>
+    <!-- <div class="page-title">刀具品牌管理</div> -->
 
     <!-- 顶部查询条件区域 -->
     <div class="topSearchDiv">
