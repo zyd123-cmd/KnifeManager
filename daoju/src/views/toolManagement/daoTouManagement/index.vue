@@ -100,7 +100,7 @@
       >
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="品牌名称" prop="brandName" label-width="90px">
+            <el-form-item label="品牌名称" prop="brandName">
               <el-select
                 v-model="addForm.brandName"
                 placeholder="请选择品牌名称"
@@ -122,7 +122,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="刀具柜名称" prop="cabinetName" label-width="100px">
+            <el-form-item label="刀具柜名称" prop="cabinetName">
               <el-select
                 v-model="addForm.cabinetName"
                 placeholder="请选择刀具柜名称"
@@ -146,8 +146,23 @@
         </el-row>
 
         <el-row :gutter="20">
-          <el-col :span="24">
-            <el-form-item label="刀具型号" prop="cutterType" label-width="90px">
+          <el-col :span="12">
+            <el-form-item label="刀具类型" prop="cutterCode">
+              <el-select
+                v-model="addForm.cutterCode"
+                placeholder="请选择刀具类型"
+                clearable
+                style="width: 100%"
+              >
+                <el-option label="铣刀" value="mill" />
+                <el-option label="钻头" value="drill" />
+                <el-option label="车刀" value="turning" />
+                <el-option label="镗刀" value="boring" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="刀具型号" prop="cutterType">
               <el-input
                 v-model="addForm.cutterType"
                 placeholder="请输入刀具型号"
@@ -159,7 +174,7 @@
 
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="价格" prop="price" label-width="90px">
+            <el-form-item label="价格" prop="price">
               <el-input-number
                 v-model="addForm.price"
                 placeholder="请输入价格"
@@ -170,7 +185,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="创建人" prop="createUser" label-width="100px">
+            <el-form-item label="创建人" prop="createUser">
               <el-input
                 v-model="addForm.createUser"
                 placeholder="请输入创建人"
@@ -182,7 +197,7 @@
 
         <el-row :gutter="20">
           <el-col :span="24">
-            <el-form-item label="刀头图片" prop="images" label-width="90px">
+            <el-form-item label="刀头图片" prop="images">
               <div class="image-upload-container">
                 <el-upload
                   v-model:file-list="addForm.images"
@@ -207,6 +222,20 @@
           </el-col>
         </el-row>
 
+        <el-row :gutter="20">
+          <el-col :span="24">
+            <el-form-item label="备注" prop="remark">
+              <el-input
+                v-model="addForm.remark"
+                type="textarea"
+                :rows="3"
+                placeholder="请输入备注信息"
+                maxlength="200"
+                show-word-limit
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
 
       <template #footer>
@@ -492,9 +521,11 @@ const currentCutterHead = ref(null)
 const addForm = reactive({
   brandName: '',
   cabinetName: '',
+  cutterCode: '',
   cutterType: '',
   price: null,
   createUser: '',
+  remark: '',
   images: []
 })
 
@@ -507,6 +538,9 @@ const addFormRules = reactive({
   cabinetName: [
     { required: true, message: '请输入刀具柜名称', trigger: 'blur' },
     { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+  ],
+  cutterCode: [
+    { required: true, message: '请选择刀具类型', trigger: 'change' }
   ],
   cutterType: [
     { required: true, message: '请输入刀具型号', trigger: 'blur' },
@@ -547,9 +581,11 @@ const resetAddForm = () => {
   Object.assign(addForm, {
     brandName: '',
     cabinetName: '',
+    cutterCode: '',
     cutterType: '',
     price: null,
-    createUser: ''
+    createUser: '',
+    remark: ''
   })
   // 清除表单验证
   nextTick(() => {
@@ -708,9 +744,11 @@ const handleEdit = (row) => {
   Object.assign(addForm, {
     brandName: row.brandName,
     cabinetName: row.cabinetList?.cabinetName || '',
+    cutterCode: row.cutterCode,
     cutterType: row.cutterType,
     price: parseFloat(row.price) || null,
-    createUser: row.createUser
+    createUser: row.createUser,
+    remark: row.remark || ''
   })
 
   addDialogVisible.value = true

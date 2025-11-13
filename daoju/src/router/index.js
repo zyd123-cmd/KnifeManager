@@ -345,19 +345,6 @@ export const constantRoutes = [
                     },
 
                     {
-                        name: "ReportTotalInventoryStats",
-                        path: "reportTotalInventoryStats",
-                        hidden: false,
-                        component: () => import('@/views/borrowReturnInfo/totalInventoryStats/index.vue'),
-                        meta: {
-                            title: "总库存统计",
-                            icon: "data-analysis",
-                            noCache: false,
-                            link: null
-                        }
-                    },
-
-                    {
                         name: "ReportRestockRecord",
                         path: "restockRecord",
                         hidden: false,
@@ -406,7 +393,7 @@ export const constantRoutes = [
                         component: () => import('@/views/historyRecord/restockRecord/index'),
                         meta: {
                             title: "补货记录",
-                            icon: "goods",·
+                            icon: "goods",
                             noCache: false,
                             link: null
                         }
@@ -695,34 +682,7 @@ export const constantRoutes = [
     //     ]
     // },
     ,
-    // 刀具类型管理
-    // {
-    //     name: "CutterTypeManagement",
-    //     path: "/cutterTypeManagement",
-    //     hidden: false,
-    //     component: Layout,
-    //     redirect: "/cutterTypeManagement/cutterType",
-    //     meta: {
-    //         title: "刀具类型",
-    //         icon: "tools",
-    //         noCache: false,
-    //         link: null,
-    //     },
-    //     children: [
-    //         {
-    //             name: "CutterType",
-    //             path: "cutterType",
-    //             hidden: false,
-    //             component: () => import('@/views/dataDictionary/cutterType/index.vue'),
-    //             meta: {
-    //                 title: "刀具类型管理",
-    //                 icon: "tools",
-    //                 noCache: false,
-    //                 link: null
-    //             }
-    //         }
-    //     ]
-    // },
+    // 
     // 数据字典
     // {
     //     name: "DataDictionary",

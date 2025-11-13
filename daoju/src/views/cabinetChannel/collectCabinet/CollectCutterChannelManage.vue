@@ -50,8 +50,6 @@
 
     <!-- 操作按钮区域 -->
     <div class="buttonDiv">
-      <el-button type="warning" icon="warning" @click="handleAlarmSettings">预警设置</el-button>
-      <el-button type="primary" icon="bar-chart" @click="handleStatistics">货道统计</el-button>
     </div>
 
     <!-- 货道信息表格 -->
@@ -94,24 +92,10 @@
         </el-table-column>
         <el-table-column prop="cutterCode" label="绑定刀具型号" align="center" width="150"/>
         <el-table-column prop="warehouseInTime" label="最近更新时间" align="center" width="160"/>
-        <el-table-column label="操作" align="center" width="280" fixed="right">
+        <el-table-column label="操作" align="center" width="100" fixed="right">
           <template #default="scope">
             <div class="operation-buttons">
               <el-button type="primary" size="small" @click="handleDetail(scope.row)">详情</el-button>
-              <el-button
-                :type="scope.row.stockStatus === 2 ? 'success' : 'danger'"
-                size="small"
-                @click="handleToggleStatus(scope.row)"
-              >
-                {{ scope.row.stockStatus === 2 ? '启用' : '禁用' }}
-              </el-button>
-              <el-button
-                :type="scope.row.isBound ? 'danger' : 'warning'"
-                size="small"
-                @click="handleToggleBind(scope.row)"
-              >
-                {{ scope.row.isBound ? '解绑' : '绑定' }}
-              </el-button>
             </div>
           </template>
         </el-table-column>
@@ -175,75 +159,6 @@
       </template>
     </el-dialog>
 
-    <!-- 统计对话框 -->
-    <el-dialog v-model="statisticsDialogVisible" title="货道统计" width="600px">
-      <el-form :inline="true" :model="statisticsForm" ref="statisticsFormRef" class="statistics-form">
-        <el-form-item label="刀柜编码:" prop="cabinetCode" :rules="[{ required: true, message: '请输入刀柜编码', trigger: 'blur' }]">
-          <el-input v-model="statisticsForm.cabinetCode" placeholder="请输入刀柜编码" />
-        </el-form-item>
-        <el-form-item label="柜子面:" prop="locPrefix">
-          <el-select v-model="statisticsForm.locPrefix" placeholder="请选择柜子面" clearable>
-            <el-option label="A面" value="A"/>
-            <el-option label="B面" value="B"/>
-            <el-option label="C面" value="C"/>
-            <el-option label="D面" value="D"/>
-            <el-option label="E面" value="E"/>
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="getStatistics" :loading="statisticsLoading">查询统计</el-button>
-        </el-form-item>
-      </el-form>
-      
-      <div v-if="statisticsData" class="statistics-content">
-        <el-descriptions :column="2" border>
-          <el-descriptions-item label="货道总数">{{ statisticsData.cabinetNum }}</el-descriptions-item>
-          <el-descriptions-item label="禁用数量">{{ statisticsData.disableNum }}</el-descriptions-item>
-          <el-descriptions-item label="空闲数量">{{ statisticsData.freeNum }}</el-descriptions-item>
-          <el-descriptions-item label="占用数量">{{ statisticsData.workNum }}</el-descriptions-item>
-          <el-descriptions-item label="库存告警值">{{ statisticsData.makeAlarm }}</el-descriptions-item>
-          <el-descriptions-item label="总库存金额">{{ statisticsData.priceNum ? statisticsData.priceNum.toFixed(2) + '元' : '0.00元' }}</el-descriptions-item>
-        </el-descriptions>
-      </div>
-
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="statisticsDialogVisible = false">关闭</el-button>
-        </span>
-      </template>
-    </el-dialog>
-
-    <!-- 绑定对话框 -->
-    <el-dialog v-model="bindDialogVisible" title="绑定货道" width="600px">
-      <el-form :model="bindForm" ref="bindFormRef" label-width="120px">
-        <el-form-item label="耗材主键:" prop="cutterId" :rules="[{ required: true, message: '请输入耗材主键', trigger: 'blur' }]">
-          <el-input v-model="bindForm.cutterId" placeholder="请输入耗材主键" />
-        </el-form-item>
-        <el-form-item label="是否禁用:" prop="isBan" :rules="[{ required: true, message: '请选择是否禁用', trigger: 'change' }]">
-          <el-select v-model="bindForm.isBan" placeholder="请选择是否禁用">
-            <el-option label="非禁用" :value="0"/>
-            <el-option label="禁用" :value="1"/>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="货道容量:" prop="locCapacity" :rules="[{ required: true, message: '请输入货道容量', trigger: 'blur' }]">
-          <el-input-number v-model="bindForm.locCapacity" :min="1" placeholder="请输入货道容量" style="width: 100%" />
-        </el-form-item>
-        <el-form-item label="包装数量:" prop="locPackQty" :rules="[{ required: true, message: '请输入包装数量', trigger: 'blur' }]">
-          <el-input-number v-model="bindForm.locPackQty" :min="1" placeholder="请输入包装数量" style="width: 100%" />
-        </el-form-item>
-        <el-form-item label="当前数量:" prop="locSurplus" :rules="[{ required: true, message: '请输入当前数量', trigger: 'blur' }]">
-          <el-input-number v-model="bindForm.locSurplus" :min="0" placeholder="请输入当前数量" style="width: 100%" />
-        </el-form-item>
-      </el-form>
-
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="bindDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitBind" :loading="bindLoading">确定绑定</el-button>
-        </span>
-      </template>
-    </el-dialog>
-
     <!-- 解绑对话框 -->
     <el-dialog v-model="unbindDialogVisible" title="解绑货道" width="400px">
         <div class="unbind-content">
@@ -275,16 +190,11 @@ const loading = ref(false)
 const tableData = ref([])
 const selectedRows = ref([])
 const detailDialogVisible = ref(false)
-const statisticsDialogVisible = ref(false)
-const bindDialogVisible = ref(false)
 const unbindDialogVisible = ref(false)
 
-const statisticsLoading = ref(false)
-const bindLoading = ref(false)
 const unbindLoading = ref(false)
 
 const currentRecord = ref(null)
-const statisticsData = ref(null)
 const currentUnbindRow = ref(null)
 
 // 搜索表单 - 专注于货道相关查询条件
@@ -296,22 +206,6 @@ const searchForm = reactive({
   isBound: null
 })
 
-// 统计表单
-const statisticsForm = reactive({
-  cabinetCode: '',
-  locPrefix: ''
-})
-
-// 绑定表单
-const bindForm = reactive({
-  cutterId: '',
-  isBan: 0,
-  locCapacity: null,
-  locPackQty: null,
-  locSurplus: null,
-  stockId: ''
-})
-
 // 分页数据
 const pagination = reactive({
   current: 1,
@@ -320,8 +214,6 @@ const pagination = reactive({
 })
 
 const searchFormRef = ref()
-const statisticsFormRef = ref()
-const bindFormRef = ref()
 
 // 货道模拟数据
 const mockData = [
@@ -412,34 +304,6 @@ const mockData = [
   }
 ]
 
-// 货道统计模拟数据
-const mockStatisticsData = {
-  'CAB20241227001-A': {
-    cabinetNum: 50,
-    disableNum: 3,
-    freeNum: 15,
-    makeAlarm: 10,
-    priceNum: 18750.50,
-    workNum: 32
-  },
-  'CAB20241227002-B': {
-    cabinetNum: 40,
-    disableNum: 2,
-    freeNum: 10,
-    makeAlarm: 8,
-    priceNum: 10716.00,
-    workNum: 28
-  },
-  'CAB20241227003-C': {
-    cabinetNum: 60,
-    disableNum: 5,
-    freeNum: 20,
-    makeAlarm: 12,
-    priceNum: 28224.00,
-    workNum: 35
-  }
-}
-
 // 生命周期
 onMounted(() => {
   getList()
@@ -519,107 +383,6 @@ const handleCurrentChange = (current) => {
 const handleDetail = (row) => {
   currentRecord.value = row
   detailDialogVisible.value = true
-}
-
-// 货道统计
-const handleStatistics = () => {
-  statisticsDialogVisible.value = true
-  statisticsData.value = null
-}
-
-const getStatistics = () => {
-  if (!statisticsForm.cabinetCode) {
-    ElMessage.warning('请输入刀柜编码')
-    return
-  }
-
-  statisticsLoading.value = true
-
-  // 模拟API调用
-  setTimeout(() => {
-    const key = `${statisticsForm.cabinetCode}-${statisticsForm.locPrefix || 'A'}`
-    statisticsData.value = mockStatisticsData[key] || {
-      cabinetNum: 0,
-      disableNum: 0,
-      freeNum: 0,
-      makeAlarm: 0,
-      priceNum: 0,
-      workNum: 0
-    }
-    statisticsLoading.value = false
-  }, 500)
-}
-
-// 货道绑定/解绑
-const handleToggleBind = (row) => {
-  if (row.isBound) {
-    // 解绑操作
-    currentUnbindRow.value = row
-    unbindDialogVisible.value = true
-  } else {
-    // 绑定操作
-    Object.assign(bindForm, {
-      cutterId: row.cutterId || '',
-      isBan: row.isBan || 0,
-      locCapacity: row.locCapacity || null,
-      locPackQty: row.packQty || null,
-      locSurplus: row.locSurplus || null,
-      stockId: row.id || ''
-    })
-    bindDialogVisible.value = true
-  }
-}
-
-const submitBind = () => {
-  bindFormRef.value?.validate((valid) => {
-    if (valid) {
-      bindLoading.value = true
-      // 模拟API调用
-      setTimeout(() => {
-        ElMessage.success('货道绑定成功')
-        bindDialogVisible.value = false
-        getList()
-        bindLoading.value = false
-      }, 1000)
-    }
-  })
-}
-
-const submitUnbind = () => {
-  unbindLoading.value = true
-  // 模拟API调用
-  setTimeout(() => {
-    ElMessage.success('货道解绑成功')
-    unbindDialogVisible.value = false
-    getList()
-    unbindLoading.value = false
-  }, 1000)
-}
-
-// 货道状态切换（启用/禁用）
-const handleToggleStatus = (row) => {
-  const isDisabled = row.stockStatus === 2
-  const action = isDisabled ? '启用' : '禁用'
-  const newStatus = isDisabled ? 1 : 2
-
-  ElMessageBox.confirm(`确定要${action}库位号 ${row.stockLoc} 吗?`, `确认${action}`, {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
-    // 模拟API调用
-    setTimeout(() => {
-      row.stockStatus = newStatus
-      ElMessage.success(`${action}成功`)
-    }, 500)
-  }).catch(() => {
-    ElMessage.info(`已取消${action}`)
-  })
-}
-
-// 预警设置
-const handleAlarmSettings = () => {
-  ElMessage.info('货道预警设置功能开发中...')
 }
 
 // 状态显示转换方法
@@ -708,14 +471,6 @@ const getLocPrefixTagType = (prefix) => {
 .operation-buttons .el-button {
   margin: 0;
   flex-shrink: 0;
-}
-
-.statistics-form {
-  margin-bottom: 20px;
-}
-
-.statistics-content {
-  margin-top: 20px;
 }
 
 .unbind-content {

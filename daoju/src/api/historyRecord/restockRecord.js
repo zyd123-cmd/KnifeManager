@@ -1,64 +1,28 @@
 import request from '@/utils/request'
 
-// 分页查询补货记录
-export function getRestockRecordList(query) {
+// 分页查询出入库记录（出入库统计数据）
+export function getStockRecordList(query) {
   return request({
-    url: '/qw/knife/web/from/mes/record/restockRecord',
+    url: '/storage-statistics',
     method: 'get',
     params: query
   })
 }
 
-// 导出补货记录
-export function exportRestockRecord(query) {
+// 导出出入库记录
+export function exportStockRecord(query) {
   return request({
-    url: '/qw/knife/web/from/mes/record/exportRestockRecord',
+    url: '/export-stock-record',
     method: 'get',
     params: query,
     responseType: 'blob'
   })
 }
 
-// 获取补货记录详情
-export function getRestockRecordDetail(id) {
+// 获取出入库记录详情
+export function getStockRecordDetail(id) {
   return request({
-    url: `/qw/knife/web/from/mes/record/restockRecord/${id}`,
+    url: `/qw/knife/web/from/mes/record/stockRecord/${id}`,
     method: 'get'
-  })
-}
-
-// 查询补货记录统计信息
-export function getRestockRecordStats(query) {
-  return request({
-    url: '/qw/knife/web/from/mes/record/restockRecord/stats',
-    method: 'get',
-    params: query
-  })
-}
-
-// 批量删除补货记录
-export function deleteRestockRecords(ids) {
-  return request({
-    url: '/qw/knife/web/from/mes/record/restockRecord',
-    method: 'delete',
-    data: ids
-  })
-}
-
-// 创建补货记录
-export function createRestockRecord(data) {
-  return request({
-    url: '/qw/knife/web/from/mes/record/restockRecord',
-    method: 'post',
-    data: data
-  })
-}
-
-// 更新补货记录
-export function updateRestockRecord(data) {
-  return request({
-    url: '/qw/knife/web/from/mes/record/restockRecord',
-    method: 'put',
-    data: data
   })
 }

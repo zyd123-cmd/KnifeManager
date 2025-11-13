@@ -1,29 +1,26 @@
 import request from '@/utils/request'
 
 // 查询全年取刀数量统计
-export function getYearlyQuantityStatistics(query) {
+export function getYearlyQuantityStatistics() {
   return request({
-    url: '/borrowReturnInfo/rankingStatistics/yearlyQuantity',
-    method: 'get',
-    params: query
+    url: '/api/v1/auditor/charts-lend-by-year',
+    method: 'get'
   })
 }
 
 // 查询全年取刀金额统计
-export function getYearlyAmountStatistics(query) {
+export function getYearlyAmountStatistics() {
   return request({
-    url: '/borrowReturnInfo/rankingStatistics/yearlyAmount',
-    method: 'get',
-    params: query
+    url: '/api/v1/auditor/charts-lend-price-by-year',
+    method: 'get'
   })
 }
 
-// 查询今年累计使用统计
-export function getYearlyUsageStatistics(query) {
+// 查询今年累计使用统计（刀具消耗统计）
+export function getYearlyUsageStatistics() {
   return request({
-    url: '/borrowReturnInfo/rankingStatistics/yearlyUsage',
-    method: 'get',
-    params: query
+    url: '/api/v1/auditor/charts-accumulated',
+    method: 'get'
   })
 }
 

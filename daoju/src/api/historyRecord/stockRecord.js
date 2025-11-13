@@ -1,9 +1,9 @@
 import request from '@/utils/request'
 
-// 分页查询出入库记录
+// 分页查询出入库记录（出入库统计数据）
 export function getStockRecordList(query) {
   return request({
-    url: '/qw/knife/web/from/mes/record/stockRecord',
+    url: '/api/v1/auditor/storage-statistics',
     method: 'get',
     params: query
   })
@@ -12,7 +12,7 @@ export function getStockRecordList(query) {
 // 导出出入库记录
 export function exportStockRecord(query) {
   return request({
-    url: '/qw/knife/web/from/mes/record/exportStockRecord',
+    url: '/api/v1/auditor/export-stock-record',
     method: 'get',
     params: query,
     responseType: 'blob'
@@ -24,23 +24,5 @@ export function getStockRecordDetail(id) {
   return request({
     url: `/qw/knife/web/from/mes/record/stockRecord/${id}`,
     method: 'get'
-  })
-}
-
-// 查询出入库记录统计信息
-export function getStockRecordStats(query) {
-  return request({
-    url: '/qw/knife/web/from/mes/record/stockRecord/stats',
-    method: 'get',
-    params: query
-  })
-}
-
-// 批量删除出入库记录
-export function deleteStockRecords(ids) {
-  return request({
-    url: '/qw/knife/web/from/mes/record/stockRecord',
-    method: 'delete',
-    data: ids
   })
 }
