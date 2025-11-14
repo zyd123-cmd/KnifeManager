@@ -406,7 +406,7 @@ export const constantRoutes = [
                         component: () => import('@/views/historyRecord/restockRecord/index'),
                         meta: {
                             title: "补货记录",
-                            icon: "goods",·
+                            icon: "goods",
                             noCache: false,
                             link: null
                         }
@@ -1219,5 +1219,6 @@ const router = createRouter({
         return { top: 0 }
     },
 })
+
 
 export default router
