@@ -55,7 +55,6 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onSubmit" icon="search">搜索</el-button>
-          <el-button type="success" icon="download" @click="handleExport">导出</el-button>
           <el-button @click="resetForm" icon="refresh">重置</el-button>
         </el-form-item>
       </el-form>
@@ -75,6 +74,14 @@
           </el-card>
         </el-col>
       </el-row>
+    </div>
+
+    <!-- 操作按钮区域 -->
+    <div class="buttonDiv">
+      <el-button type="primary" icon="setting" @click="openThresholdSettings">阈值设置</el-button>
+      <el-button type="success" icon="refresh" @click="handleAutoInventory" :loading="inventoryLoading">自动盘存</el-button>
+      <el-button type="warning" icon="tools" @click="handleBatchProcess" :disabled="selectedRows.length === 0">批量处理</el-button>
+      <el-button type="success" icon="download" @click="handleExport">导出</el-button>
     </div>
 
     <!-- 表格区域 -->
@@ -119,9 +126,63 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="预警时间" align="center" width="150"/>
-        <el-table-column label="操作" align="center" width="100" fixed="right">
+        <el-table-column label="操作" align="center" width="280" fixed="right">
           <template #default="scope">
             <el-button type="primary" size="small" @click="handleDetail(scope.row)">详情</el-button>
+
+            <!-- 未处理状态：显示处理和忽略按钮 -->
+            <template v-if="scope.row.handleStatus === 0">
+              <el-button
+                type="success"
+                size="small"
+                @click="handleProcess(scope.row)"
+              >
+                处理
+              </el-button>
+              <el-button
+                type="info"
+                size="small"
+                @click="handleIgnore(scope.row)"
+              >
+                忽略
+              </el-button>
+            </template>
+
+            <!-- 已处理状态：显示重新处理和撤销处理按钮 -->
+            <template v-if="scope.row.handleStatus === 1">
+              <el-button
+                type="warning"
+                size="small"
+                @click="handleReprocess(scope.row)"
+              >
+                重新处理
+              </el-button>
+              <el-button
+                type="danger"
+                size="small"
+                @click="handleCancel(scope.row)"
+              >
+                撤销处理
+              </el-button>
+            </template>
+
+            <!-- 已忽略状态：显示重新激活和删除按钮 -->
+            <template v-if="scope.row.handleStatus === 2">
+              <el-button
+                type="success"
+                size="small"
+                @click="handleReactivate(scope.row)"
+              >
+                重新激活
+              </el-button>
+              <el-button
+                type="danger"
+                size="small"
+                @click="handleDelete(scope.row)"
+              >
+                删除
+              </el-button>
+            </template>
           </template>
         </el-table-column>
       </el-table>

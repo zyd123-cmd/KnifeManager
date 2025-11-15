@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 查询总库存统计列表
 export function listTotalInventoryStats(query) {
   return request({
-    url: '/borrowReturnInfo/totalInventoryStats/list',
+    url: '/api/v1/auditor/total-stock',
     method: 'get',
     params: query
   })
@@ -33,6 +33,14 @@ export function getInventorySummary(type) {
     url: '/borrowReturnInfo/totalInventoryStats/summary',
     method: 'get',
     params: { type }
+  })
+}
+
+// 获取单个库位详情
+export function getStockLocationDetail(stockId) {
+  return request({
+    url: `/api/v1/auditor/stock-location/${stockId}`,
+    method: 'get'
   })
 }
 

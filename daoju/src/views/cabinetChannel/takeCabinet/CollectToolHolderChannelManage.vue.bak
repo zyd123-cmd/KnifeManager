@@ -1,0 +1,515 @@
+<script setup name="TakeCutterChannelManage">
+import { ref, reactive, onMounted, nextTick } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Warning, UploadFilled } from '@element-plus/icons-vue'
+import { listTakeCabinet, unbindCutter, changeBan, preBatchPlug, onPreBatchPlug } from '@/api/cabinetChannel/takeCabinet'
+
+// 响应式数据
+const loading = ref(false)
+const tableData = ref([])
+const selectedRows = ref([])
+const detailDialogVisible = ref(false)
+const statisticsDialogVisible = ref(false)
+const bindDialogVisible = ref(false)
+const unbindDialogVisible = ref(false)
+const preReplenishDialogVisible = ref(false)
+const importDialogVisible = ref(false)
+const statisticsLoading = ref(false)
+const bindLoading = ref(false)
+const unbindLoading = ref(false)
+const preReplenishLoading = ref(false)
+const replenishLoading = ref(false)
+const importLoading = ref(false)
+const currentRecord = ref(null)
+const statisticsData = ref(null)
+const currentUnbindRow = ref(null)
+const preReplenishData = ref(null)
+const preReplenishTab = ref('success')
+
+// 搜索表单
+const searchForm = reactive({
+  brandCode: '',
+  cabinetCode: '',
+  cutterCode: '',
+  cutterType: '',
+  locPrefix: '',
+  stockLoc: '',
+  cutterOrBrand: '',
+  materialCode: '',
+  specification: ''
+})
+
+// 统计表单
+const statisticsForm = reactive({
+  cabinetCode: '',
+  locPrefix: ''
+})
+
+// 绑定表单
+const bindForm = reactive({
+  cutterId: '',
+  isBan: 0,
+  locCapacity: null,
+  locPackQty: null,
+  locSurplus: null,
+  stockId: ''
+})
+
+// 导入表单
+const importForm = reactive({
+  cabinetCode: '',
+  file: null
+})
+
+// 分页数据
+const pagination = reactive({
+  current: 1,
+  size: 20,
+  total: 0
+})
+
+const searchFormRef = ref()
+const statisticsFormRef = ref()
+const bindFormRef = ref()
+const importFormRef = ref()
+const uploadRef = ref()
+
+// 模拟货道数据
+
+//
+
+// 统计数据模拟
+
+// 生命周期
+onMounted(() => {
+  getList()
+})
+
+// 货道列表查询
+const getList = () => {
+  loading.value = true
+  
+  // 构造查询参数
+  const queryParams = {
+    brandCode: searchForm.brandCode,
+    cabinetCode: searchForm.cabinetCode,
+    cutterCode: searchForm.cutterCode,
+    cutterType: searchForm.cutterType,
+    locPrefix: searchForm.locPrefix,
+    stockLoc: searchForm.stockLoc,
+    cutterOrBrand: searchForm.cutterOrBrand,
+    materialCode: searchForm.materialCode,
+    specification: searchForm.specification
+  }
+  
+  // 过滤掉空值参数
+  Object.keys(queryParams).forEach(key => {
+    if (queryParams[key] === '' || queryParams[key] === null || queryParams[key] === undefined) {
+      delete queryParams[key]
+    }
+  })
+
+  listTakeCabinet(queryParams).then(response => {
+    if (response.success) {
+      tableData.value = response.data || []
+      pagination.total = response.data.length || 0
+    } else {
+      ElMessage.error(response.msg || '查询失败')
+      tableData.value = []
+    }
+    loading.value = false
+  }).catch(error => {
+    console.error('查询取刀柜列表失败:', error)
+    ElMessage.error('查询失败')
+    tableData.value = []
+    loading.value = false
+  })
+}
+
+// 搜索处理
+const handleSearch = () => {
+  pagination.current = 1
+  getList()
+}
+
+// 重置搜索
+const resetSearch = () => {
+  Object.assign(searchForm, {
+    brandCode: '',
+    cabinetCode: '',
+    cutterCode: '',
+    cutterType: '',
+    locPrefix: '',
+    stockLoc: '',
+    cutterOrBrand: '',
+    materialCode: '',
+    specification: ''
+  })
+  nextTick(() => {
+    searchFormRef.value?.clearValidate()
+  })
+  getList()
+}
+
+// 选择项变化
+const handleSelectionChange = (selection) => {
+  selectedRows.value = selection
+}
+
+// 分页大小变化
+const handleSizeChange = (size) => {
+  pagination.size = size
+  getList()
+}
+
+// 页码变化
+const handleCurrentChange = (current) => {
+  pagination.current = current
+  getList()
+}
+
+// 查看详情
+const handleDetail = (row) => {
+  currentRecord.value = row
+  detailDialogVisible.value = true
+}
+
+// 导出数据
+const handleExport = () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请选择要导出的货道记录')
+    return
+  }
+
+  // 实际导出逻辑
+  console.log('导出货道数据:', selectedRows.value)
+  ElMessage.success('导出成功')
+}
+
+// 打开统计对话框
+const handleStatistics = () => {
+  statisticsDialogVisible.value = true
+  statisticsData.value = null
+}
+
+// 获取统计数据
+const getStatistics = () => {
+  if (!statisticsForm.cabinetCode) {
+    ElMessage.warning('请输入刀柜编码')
+    return
+  }
+
+  statisticsLoading.value = true
+
+  // 模拟API调用
+  setTimeout(() => {
+    const key = `${statisticsForm.cabinetCode}-${statisticsForm.locPrefix || 'A'}`
+    statisticsData.value = mockStatisticsData[key] || {
+      cabinetNum: 0,
+      disableNum: 0,
+      freeNum: 0,
+      makeAlarm: 0,
+      priceNum: 0,
+      workNum: 0
+    }
+    statisticsLoading.value = false
+  }, 500)
+}
+
+// 解绑货道
+const handleUnbind = (row) => {
+  currentUnbindRow.value = row
+  unbindDialogVisible.value = true
+}
+
+// 提交解绑
+const submitUnbind = () => {
+  unbindLoading.value = true
+  
+  unbindCutter(currentUnbindRow.value.id).then(response => {
+    if (response.success) {
+      ElMessage.success('货道解绑成功')
+      unbindDialogVisible.value = false
+      getList() // 刷新列表
+    } else {
+      ElMessage.error(response.msg || '解绑失败')
+    }
+    unbindLoading.value = false
+  }).catch(error => {
+    console.error('解绑失败:', error)
+    ElMessage.error('解绑失败')
+    unbindLoading.value = false
+  })
+}
+
+// 绑定/解绑切换
+const handleToggleBind = (row) => {
+  // 根据当前绑定状态决定操作
+  const isBan = row.isBan || '0'  // '0'表示非禁用，'1'表示禁用
+  const action = isBan === '0' ? '禁用' : '启用'
+  
+  ElMessageBox.confirm(`确定要${action}库位号 ${row.stockLoc} 吗?`, `确认${action}`, {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    // 调用API切换绑定状态
+    const newIsBan = isBan === '0' ? '1' : '0'
+    changeBan(row.id, newIsBan).then(response => {
+      if (response.success) {
+        // 更新本地数据
+        row.isBan = newIsBan
+        ElMessage.success(`${action}成功!`)
+      } else {
+        ElMessage.error(response.msg || `${action}失败`)
+      }
+    }).catch(error => {
+      console.error(`${action}失败:`, error)
+      ElMessage.error(`${action}失败`)
+    })
+  }).catch(() => {
+    ElMessage.info(`已取消${action}`)
+  })
+}
+
+// 绑定货道
+const handleBind = (row) => {
+  // 重置绑定表单
+  Object.assign(bindForm, {
+    cutterId: row.cutterId || '',
+    isBan: row.isBan || 0,
+    locCapacity: row.locCapacity || null,
+    locPackQty: row.packQty || null,
+    locSurplus: row.locSurplus || null,
+    stockId: row.id || ''
+  })
+
+  bindDialogVisible.value = true
+}
+
+// 提交绑定
+const submitBind = () => {
+  bindFormRef.value?.validate((valid) => {
+    if (valid) {
+      bindLoading.value = true
+
+      // 模拟API调用
+      setTimeout(() => {
+        ElMessage.success('货道绑定成功')
+        bindDialogVisible.value = false
+        getList() // 刷新列表
+        bindLoading.value = false
+      }, 1000)
+    }
+  })
+}
+
+// 预补刀
+const handlePreReplenish = () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请选择要预补刀的货道记录')
+    return
+  }
+
+  // 获取选中记录的刀柜编码（假设所有选中记录属于同一个刀柜）
+  const cabinetCode = selectedRows.value[0].cabinetCode
+  if (!cabinetCode) {
+    ElMessage.warning('无法获取刀柜编码')
+    return
+  }
+
+  preReplenishLoading.value = true
+  preReplenishData.value = null
+  preReplenishTab.value = 'success'
+  preReplenishDialogVisible.value = true
+
+  // 调用预补刀接口
+  preBatchPlug(cabinetCode).then(response => {
+    if (response.success) {
+      preReplenishData.value = response.data || { successStock: [], errorStock: [] }
+      ElMessage.success('预补刀查询成功')
+    } else {
+      ElMessage.error(response.msg || '预补刀查询失败')
+      preReplenishData.value = { successStock: [], errorStock: [] }
+    }
+    preReplenishLoading.value = false
+  }).catch(error => {
+    console.error('预补刀查询失败:', error)
+    ElMessage.error('预补刀查询失败')
+    preReplenishData.value = { successStock: [], errorStock: [] }
+    preReplenishLoading.value = false
+  })
+}
+
+// 批量补刀
+const handleBatchReplenish = () => {
+  if (!preReplenishData.value || !preReplenishData.value.successStock || preReplenishData.value.successStock.length === 0) {
+    ElMessage.warning('没有可补刀的货道')
+    return
+  }
+
+  // 获取刀柜编码
+  const cabinetCode = preReplenishData.value.successStock[0]?.cabinetCode
+  if (!cabinetCode) {
+    ElMessage.warning('无法获取刀柜编码')
+    return
+  }
+
+  replenishLoading.value = true
+
+  // 调用批量补刀接口
+  onPreBatchPlug(cabinetCode).then(response => {
+    if (response.success) {
+      if (response.data) {
+        ElMessage.success('批量补刀成功')
+        preReplenishDialogVisible.value = false
+        getList() // 刷新列表
+      } else {
+        ElMessage.warning('批量补刀失败')
+      }
+    } else {
+      ElMessage.error(response.msg || '批量补刀失败')
+    }
+    replenishLoading.value = false
+  }).catch(error => {
+    console.error('批量补刀失败:', error)
+    ElMessage.error('批量补刀失败')
+    replenishLoading.value = false
+  })
+}
+
+// 补刀操作
+const handleReplenish = () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请选择要补刀的货道记录')
+    return
+  }
+
+  replenishLoading.value = true
+
+  // 模拟API调用
+  setTimeout(() => {
+    ElMessage.success(`补刀成功，共处理${selectedRows.value.length}条货道记录`)
+    replenishLoading.value = false
+    getList() // 刷新列表
+  }, 1000)
+}
+
+// 预警设置
+const handleAlarmSettings = () => {
+  ElMessage.info('预警设置功能开发中...')
+}
+
+// 切换货道状态（禁用/启用）
+const handleToggleStatus = (row) => {
+  const isDisabled = row.stockStatus === 2 // 2表示维护状态（禁用）
+  const action = isDisabled ? '启用' : '禁用'
+  const newStatus = isDisabled ? 1 : 2 // 1表示正常，2表示维护
+
+  ElMessageBox.confirm(`确定要${action}库位号 ${row.stockLoc} 吗?`, `确认${action}`, {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    // 模拟API调用
+    setTimeout(() => {
+      row.stockStatus = newStatus
+      ElMessage.success(`${action}成功!`)
+    }, 500)
+  }).catch(() => {
+    ElMessage.info(`已取消${action}`)
+  })
+}
+
+// 导入操作
+const handleImport = () => {
+  importDialogVisible.value = true
+  // 重置导入表单
+  Object.assign(importForm, {
+    cabinetCode: '',
+    file: null
+  })
+  // 清空上传组件
+  uploadRef.value?.clearFiles()
+}
+
+// 文件变化处理
+const handleFileChange = (file) => {
+  importForm.file = file.raw
+}
+
+// 文件移除处理
+const handleFileRemove = () => {
+  importForm.file = null
+}
+
+// 提交导入
+const submitImport = () => {
+  importFormRef.value?.validate((valid) => {
+    if (valid) {
+      if (!importForm.file) {
+        ElMessage.warning('请选择要导入的文件')
+        return
+      }
+
+      importLoading.value = true
+
+      // 模拟API调用
+      setTimeout(() => {
+        ElMessage.success('货道数据导入成功')
+        importDialogVisible.value = false
+        importLoading.value = false
+        getList() // 刷新列表
+      }, 2000)
+    }
+  })
+}
+
+// 状态文本和样式方法
+const getStockStatusText = (status) => {
+  const statusMap = {
+    0: '空闲',
+    1: '占用',
+    2: '维护'
+  }
+  return statusMap[status] || '未知'
+}
+
+const getStockStatusTagType = (status) => {
+  const typeMap = {
+    0: 'success',
+    1: 'warning',
+    2: 'danger'
+  }
+  return typeMap[status] || 'info'
+}
+
+const getStorageTypeText = (type) => {
+  const typeMap = {
+    0: '公共暂存',
+    1: '个人暂存',
+    2: '扩展取刀'
+  }
+  return typeMap[type] || '未知'
+}
+
+const getStorageTypeTagType = (type) => {
+  const typeMap = {
+    0: 'primary',
+    1: 'success',
+    2: 'warning'
+  }
+  return typeMap[type] || 'info'
+}
+
+const getLocPrefixTagType = (prefix) => {
+  const typeMap = {
+    'A': 'primary',
+    'B': 'success',
+    'C': 'warning',
+    'D': 'danger',
+    'E': 'info'
+  }
+  return typeMap[prefix] || 'info'
+}
+</script>

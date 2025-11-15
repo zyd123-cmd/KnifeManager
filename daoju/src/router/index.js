@@ -343,10 +343,9 @@ export const constantRoutes = [
                             link: null
                         }
                     },
-
                     {
                         name: "ReportTotalInventoryStats",
-                        path: "reportTotalInventoryStats",
+                        path: "reporttotalInventoryStats",
                         hidden: false,
                         component: () => import('@/views/borrowReturnInfo/totalInventoryStats/index.vue'),
                         meta: {
@@ -356,19 +355,18 @@ export const constantRoutes = [
                             link: null
                         }
                     },
-
-                    {
-                        name: "ReportRestockRecord",
-                        path: "restockRecord",
-                        hidden: false,
-                        component: () => import('@/views/historyRecord/restockRecord/index'),
-                        meta: {
-                            title: "货道库存统计",
-                            icon: "goods",
-                            noCache: false,
-                            link: null
-                        }
-                    },
+                    // {
+                    //     name: "ReportRestockRecord",
+                    //     path: "restockRecord",
+                    //     hidden: false,
+                    //     component: () => import('@/views/historyRecord/restockRecord/index'),
+                    //     meta: {
+                    //         title: "货道库存统计",
+                    //         icon: "goods",
+                    //         noCache: false,
+                    //         link: null
+                    //     }
+                    // },
 
                     {
                         name: "ReportScrapKnifeCollectionStatistics",
@@ -695,34 +693,7 @@ export const constantRoutes = [
     //     ]
     // },
     ,
-    // 刀具类型管理
-    // {
-    //     name: "CutterTypeManagement",
-    //     path: "/cutterTypeManagement",
-    //     hidden: false,
-    //     component: Layout,
-    //     redirect: "/cutterTypeManagement/cutterType",
-    //     meta: {
-    //         title: "刀具类型",
-    //         icon: "tools",
-    //         noCache: false,
-    //         link: null,
-    //     },
-    //     children: [
-    //         {
-    //             name: "CutterType",
-    //             path: "cutterType",
-    //             hidden: false,
-    //             component: () => import('@/views/dataDictionary/cutterType/index.vue'),
-    //             meta: {
-    //                 title: "刀具类型管理",
-    //                 icon: "tools",
-    //                 noCache: false,
-    //                 link: null
-    //             }
-    //         }
-    //     ]
-    // },
+    // 
     // 数据字典
     // {
     //     name: "DataDictionary",

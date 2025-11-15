@@ -3,8 +3,8 @@
     <!-- 顶部查询条件区域 -->
     <div class="topSearchDiv">
       <el-form :inline="true" :model="searchForm" ref="searchFormRef" class="demo-form-inline">
-        <el-form-item label="统计类型:" prop="inventoryType">
-          <el-select v-model="searchForm.inventoryType" placeholder="请选择统计类型" clearable @change="handleTypeChange">
+        <el-form-item label="统计类型:" prop="statisticsType">
+          <el-select v-model="searchForm.statisticsType" placeholder="请选择统计类型" clearable @change="handleTypeChange">
             <el-option label="刀具" value="cutter"/>
             <el-option label="刀柄" value="handle"/>
           </el-select>
@@ -29,7 +29,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="searchForm.inventoryType === 'cutter'" label="刀具类型:" prop="cutterType">
+        <el-form-item v-if="searchForm.statisticsType === 'cutter'" label="刀具类型:" prop="cutterType">
           <el-select v-model="searchForm.cutterType" placeholder="请选择刀具类型" clearable>
             <el-option
               v-for="type in cutterTypeList"
@@ -39,7 +39,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="searchForm.inventoryType === 'handle'" label="刀柄类型:" prop="handleType">
+        <el-form-item v-if="searchForm.statisticsType === 'handle'" label="刀柄类型:" prop="handleType">
           <el-select v-model="searchForm.handleType" placeholder="请选择刀柄类型" clearable>
             <el-option
               v-for="type in handleTypeList"
@@ -98,6 +98,8 @@
         style="width: 100%; table-layout: fixed;"
         v-loading="loading"
         @selection-change="handleSelectionChange"
+        @row-click="handleViewDetail"
+        :row-style="{cursor: 'pointer'}"
       >
         <el-table-column type="selection" width="60" align="center"/>
         <el-table-column prop="cabinetCode" label="刀柜编码" align="center" width="120"/>
@@ -105,11 +107,11 @@
         <el-table-column prop="brandName" label="品牌名称" align="center" width="120"/>
         
         <!-- 刀具相关字段 -->
-        <el-table-column v-if="searchForm.inventoryType === 'cutter'" prop="cutterCode" label="刀具型号" align="center" width="150"/>
-        <el-table-column v-if="searchForm.inventoryType === 'cutter'" prop="cutterType" label="刀具类型" align="center" width="120"/>
+        <el-table-column v-if="searchForm.statisticsType === 'cutter'" prop="cutterCode" label="刀具型号" align="center" width="150"/>
+        <el-table-column v-if="searchForm.statisticsType === 'cutter'" prop="cutterType" label="刀具类型" align="center" width="120"/>
         
         <!-- 刀柄相关字段 -->
-        <el-table-column v-if="searchForm.inventoryType === 'handle'" prop="handleType" label="刀柄类型" align="center" width="120"/>
+        <el-table-column v-if="searchForm.statisticsType === 'handle'" prop="handleType" label="刀柄类型" align="center" width="120"/>
         
         <el-table-column prop="specification" label="规格" align="center" width="150"/>
         <el-table-column prop="locCapacity" label="库位容量" align="center" width="100"/>
@@ -131,9 +133,16 @@
             ¥{{ (scope.row.locSurplus * scope.row.price).toFixed(2) }}
           </template>
         </el-table-column>
-        <el-table-column prop="locPrefix" label="柜子面" align="center" width="80"/>
+        <el-table-column prop="cabinetSide" label="柜子面" align="center" width="80"/>
         <el-table-column prop="warehouseInTime" label="入库时间" align="center" width="150"/>
         <el-table-column prop="updateTime" label="更新时间" align="center" min-width="150"/>
+        <el-table-column label="操作" align="center" width="100" fixed="right">
+          <template #default="scope">
+            <el-button type="primary" link @click.stop="handleViewDetail(scope.row)">
+              查看详情
+            </el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </div>
 
@@ -149,6 +158,105 @@
         @current-change="handleCurrentChange"
       />
     </div>
+
+    <!-- 库位详情对话框 -->
+    <el-dialog
+      v-model="detailDialogVisible"
+      title="库位详情"
+      width="800px"
+      @close="handleCloseDetail"
+    >
+      <div v-if="currentStockDetail" class="detail-content">
+        <el-descriptions :column="2" border>
+          <el-descriptions-item label="主键id">
+            {{ currentStockDetail.id }}
+          </el-descriptions-item>
+          <el-descriptions-item label="刀柜编码">
+            {{ currentStockDetail.cabinetCode }}
+          </el-descriptions-item>
+          <el-descriptions-item label="库位号">
+            {{ currentStockDetail.stockLoc }}
+          </el-descriptions-item>
+          <el-descriptions-item label="柜子面">
+            {{ currentStockDetail.cabinetSide }}
+          </el-descriptions-item>
+          <el-descriptions-item label="品牌名称">
+            {{ currentStockDetail.brandName }}
+          </el-descriptions-item>
+          <el-descriptions-item label="品牌编码">
+            {{ currentStockDetail.brandCode }}
+          </el-descriptions-item>
+          <el-descriptions-item label="刀具型号" v-if="currentStockDetail.cutterCode">
+            {{ currentStockDetail.cutterCode }}
+          </el-descriptions-item>
+          <el-descriptions-item label="刀具类型">
+            {{ currentStockDetail.cutterType }}
+          </el-descriptions-item>
+          <el-descriptions-item label="规格">
+            {{ currentStockDetail.specification }}
+          </el-descriptions-item>
+          <el-descriptions-item label="物料编码">
+            {{ currentStockDetail.materialCode }}
+          </el-descriptions-item>
+          <el-descriptions-item label="物料类型">
+            {{ currentStockDetail.materialType }}
+          </el-descriptions-item>
+          <el-descriptions-item label="库位状态">
+            <el-tag :type="getStockStatusTag(currentStockDetail.stockStatus)">
+              {{ getStockStatusText(currentStockDetail.stockStatus) }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="库位容量">
+            {{ currentStockDetail.locCapacity }}
+          </el-descriptions-item>
+          <el-descriptions-item label="剩余数量">
+            {{ currentStockDetail.locSurplus }}
+          </el-descriptions-item>
+          <el-descriptions-item label="当前库存数">
+            {{ currentStockDetail.stockNum }}
+          </el-descriptions-item>
+          <el-descriptions-item label="警报数量">
+            {{ currentStockDetail.warningNum }}
+          </el-descriptions-item>
+          <el-descriptions-item label="单价">
+            ￥{{ currentStockDetail.price }}
+          </el-descriptions-item>
+          <el-descriptions-item label="库存价值">
+            <span style="color: #409eff; font-weight: bold;">
+              ￥{{ currentStockDetail.stockValue || (currentStockDetail.locSurplus * currentStockDetail.price).toFixed(2) }}
+            </span>
+          </el-descriptions-item>
+          <el-descriptions-item label="包装数量">
+            {{ currentStockDetail.packQty }}
+          </el-descriptions-item>
+          <el-descriptions-item label="货道包装数量">
+            {{ currentStockDetail.locPackQty }}
+          </el-descriptions-item>
+          <el-descriptions-item label="库位类型">
+            {{ currentStockDetail.locType === 0 ? '收刀柜' : '取刀柜' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="入库时间">
+            {{ currentStockDetail.warehouseInTime }}
+          </el-descriptions-item>
+          <el-descriptions-item label="更新时间">
+            {{ currentStockDetail.updateTime }}
+          </el-descriptions-item>
+          <el-descriptions-item label="图片" :span="2" v-if="currentStockDetail.imageUrl">
+            <el-image
+              :src="currentStockDetail.imageUrl"
+              fit="contain"
+              style="width: 200px; height: 200px;"
+              :preview-src-list="[currentStockDetail.imageUrl]"
+            />
+          </el-descriptions-item>
+        </el-descriptions>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="handleCloseDetail">关闭</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -160,7 +268,8 @@ import {
   getCutterInventoryStats,
   getHandleInventoryStats,
   getInventorySummary,
-  exportInventoryStats
+  exportInventoryStats,
+  getStockLocationDetail
 } from '@/api/borrowReturnInfo/totalInventoryStats'
 
 // 响应式数据
@@ -169,15 +278,18 @@ const tableData = ref([])
 const selectedRows = ref([])
 const summaryData = ref(null)
 const searchFormRef = ref()
+const detailDialogVisible = ref(false)  // 库位详情对话框
+const currentStockDetail = ref(null)    // 当前库位详情
 
 // 搜索表单
 const searchForm = reactive({
-  inventoryType: 'cutter', // 默认显示刀具
+  statisticsType: 'cutter', // 统计类型（对应后端的statisticsType）
   brandName: '',
   cabinetCode: '',
   cutterType: '',
-  handleType: '',
-  stockStatus: ''
+  stockStatus: null,
+  current: 1,
+  size: 10
 })
 
 // 分页
@@ -193,104 +305,179 @@ const cabinetList = ref([])
 const cutterTypeList = ref([])
 const handleTypeList = ref([])
 
-// 模拟刀具库存数据
+// 模拟刀具库存数据（字段完全匹配后端刀柜库位详情）
 const mockCutterData = [
   {
-    id: 1,
-    cabinetCode: 'CAB001',
-    stockLoc: 'A01-01',
-    brandName: '三菱',
-    cutterCode: 'R390-11T308M-PM',
-    cutterType: '铣刀',
-    specification: 'R390-11T308M-PM',
-    locCapacity: 50,
-    locSurplus: 35,
-    stockStatus: 1,
-    price: 285.50,
-    locPrefix: 'A',
-    warehouseInTime: '2024-12-26 08:30:00',
-    updateTime: '2024-12-26 15:30:00'
+    id: 1,                                  // 主键id
+    brandCode: 'MITSUBISHI',                // 品牌编码
+    brandName: '三菱',                      // 品牌名称
+    cabinetCode: 'CAB001',                  // 刀柜编码
+    cabinetName: '取刀柜01',                // 刀具柜名称
+    cutterCode: 'R390-11T308M-PM',          // 刀具型号
+    cutterId: 1001,                         // 物料编码主键
+    cutterType: '铣刀',                     // 刀具类型
+    imageUrl: '/images/cutter1.jpg',        // 图片路径
+    locCapacity: 50,                        // 库位容量
+    locPackQty: 10,                         // 货道包装数量
+    locSurplus: 35,                         // 库位产品剩余[货道库存]
+    locType: 1,                             // 库位类型[收刀柜: 0 取刀柜: 1]
+    materialCode: 'MAT-R390-001',           // 物料编码
+    materialType: 'cutter',                 // 物料类型
+    packQty: 10,                            // 最小包装数量
+    price: 285.50,                          // 单价
+    specification: 'R390-11T308M-PM',       // 规格
+    stockLoc: 'A01-01',                     // 库位号
+    stockNum: 35,                           // 当前库存数
+    stockStatus: 1,                         // 库位状态
+    warningNum: 10,                         // 警报数量
+    warehouseInTime: '2024-12-26 08:30:00', // 入库时间
+    updateTime: '2024-12-26 15:30:00',      // 更新时间
+    stockValue: 9992.50,                    // 库存价值（计算字段）
+    cabinetSide: 'A'                        // 柜子面（计算字段）
   },
   {
     id: 2,
-    cabinetCode: 'CAB002',
-    stockLoc: 'B02-03',
+    brandCode: 'SANDVIK',
     brandName: '山特维克',
+    cabinetCode: 'CAB002',
+    cabinetName: '取刀柜02',
     cutterCode: '880-D1200L20-03',
+    cutterId: 1002,
     cutterType: '钻头',
-    specification: '880-D1200L20-03',
+    imageUrl: '/images/cutter2.jpg',
     locCapacity: 40,
+    locPackQty: 8,
     locSurplus: 28,
-    stockStatus: 1,
+    locType: 1,
+    materialCode: 'MAT-880-002',
+    materialType: 'cutter',
+    packQty: 8,
     price: 156.80,
-    locPrefix: 'B',
+    specification: '880-D1200L20-03',
+    stockLoc: 'B02-03',
+    stockNum: 28,
+    stockStatus: 1,
+    warningNum: 5,
     warehouseInTime: '2024-12-25 14:20:00',
-    updateTime: '2024-12-26 10:15:00'
+    updateTime: '2024-12-26 10:15:00',
+    stockValue: 4390.40,
+    cabinetSide: 'B'
   },
   {
     id: 3,
-    cabinetCode: 'CAB003',
-    stockLoc: 'C03-05',
+    brandCode: 'KENNAMETAL',
     brandName: '肯纳',
+    cabinetCode: 'CAB003',
+    cabinetName: '取刀柜03',
     cutterCode: 'CNMG120408-PM',
+    cutterId: 1003,
     cutterType: '车刀片',
-    specification: 'CNMG120408-PM',
+    imageUrl: '/images/cutter3.jpg',
     locCapacity: 60,
+    locPackQty: 12,
     locSurplus: 0,
-    stockStatus: 0,
+    locType: 1,
+    materialCode: 'MAT-CNMG-003',
+    materialType: 'cutter',
+    packQty: 12,
     price: 198.60,
-    locPrefix: 'C',
+    specification: 'CNMG120408-PM',
+    stockLoc: 'C03-05',
+    stockNum: 0,
+    stockStatus: 0,
+    warningNum: 15,
     warehouseInTime: '2024-12-24 09:45:00',
-    updateTime: '2024-12-26 09:00:00'
+    updateTime: '2024-12-26 09:00:00',
+    stockValue: 0.00,
+    cabinetSide: 'C'
   }
 ]
 
-// 模拟刀柄库存数据
+// 模拟刀柄库存数据（字段完全匹配后端刀柜库位详情）
 const mockHandleData = [
   {
     id: 4,
-    cabinetCode: 'HC001',
-    stockLoc: 'A01-01',
+    brandCode: 'MITSUBISHI',
     brandName: '三菱',
-    handleType: 'BT40',
-    specification: 'BT40-ER32-100',
+    cabinetCode: 'HC001',
+    cabinetName: '刀柄柜01',
+    cutterCode: null,                       // 刀柄无刀具型号
+    cutterId: null,
+    cutterType: 'BT40',                     // 刀柄使用cutterType字段存储刀柄类型
+    imageUrl: '/images/handle1.jpg',
     locCapacity: 50,
+    locPackQty: 5,
     locSurplus: 35,
-    stockStatus: 1,
+    locType: 1,
+    materialCode: 'MAT-BT40-001',
+    materialType: 'handle',
+    packQty: 5,
     price: 280.50,
-    locPrefix: 'A',
+    specification: 'BT40-ER32-100',
+    stockLoc: 'A01-01',
+    stockNum: 35,
+    stockStatus: 1,
+    warningNum: 8,
     warehouseInTime: '2024-12-26 09:00:00',
-    updateTime: '2024-12-26 15:30:00'
+    updateTime: '2024-12-26 15:30:00',
+    stockValue: 9817.50,
+    cabinetSide: 'A'
   },
   {
     id: 5,
-    cabinetCode: 'HC001',
-    stockLoc: 'A01-02',
+    brandCode: 'SANDVIK',
     brandName: '山特维克',
-    handleType: 'BT30',
-    specification: 'BT30-ER20-80',
+    cabinetCode: 'HC001',
+    cabinetName: '刀柄柜01',
+    cutterCode: null,
+    cutterId: null,
+    cutterType: 'BT30',
+    imageUrl: '/images/handle2.jpg',
     locCapacity: 50,
+    locPackQty: 5,
     locSurplus: 0,
-    stockStatus: 0,
+    locType: 1,
+    materialCode: 'MAT-BT30-002',
+    materialType: 'handle',
+    packQty: 5,
     price: 195.00,
-    locPrefix: 'A',
+    specification: 'BT30-ER20-80',
+    stockLoc: 'A01-02',
+    stockNum: 0,
+    stockStatus: 0,
+    warningNum: 10,
     warehouseInTime: '2024-12-26 09:00:00',
-    updateTime: '2024-12-26 14:20:00'
+    updateTime: '2024-12-26 14:20:00',
+    stockValue: 0.00,
+    cabinetSide: 'A'
   },
   {
     id: 6,
-    cabinetCode: 'HC002',
-    stockLoc: 'B02-01',
+    brandCode: 'KENNAMETAL',
     brandName: '肯纳',
-    handleType: 'HSK-A63',
-    specification: 'HSK-A63-ER25-90',
+    cabinetCode: 'HC002',
+    cabinetName: '刀柄柜02',
+    cutterCode: null,
+    cutterId: null,
+    cutterType: 'HSK-A63',
+    imageUrl: '/images/handle3.jpg',
     locCapacity: 30,
+    locPackQty: 3,
     locSurplus: 15,
-    stockStatus: 1,
+    locType: 1,
+    materialCode: 'MAT-HSK-003',
+    materialType: 'handle',
+    packQty: 3,
     price: 420.00,
-    locPrefix: 'B',
+    specification: 'HSK-A63-ER25-90',
+    stockLoc: 'B02-01',
+    stockNum: 15,
+    stockStatus: 1,
+    warningNum: 5,
     warehouseInTime: '2024-12-26 10:00:00',
-    updateTime: '2024-12-26 16:10:00'
+    updateTime: '2024-12-26 16:10:00',
+    stockValue: 6300.00,
+    cabinetSide: 'B'
   }
 ]
 
@@ -357,7 +544,7 @@ const getStockStatusTag = (status) => {
 const handleTypeChange = () => {
   // 清空相关搜索条件
   searchForm.cutterType = ''
-  searchForm.handleType = ''
+  // 注意：刀柄类型不在后端参数中，这里仅用于前端显示筛选
   getList()
 }
 
@@ -365,59 +552,49 @@ const handleTypeChange = () => {
 const getList = async () => {
   loading.value = true
   try {
-    // 模拟API调用
-    setTimeout(() => {
-      let filteredData = []
-
-      // 根据统计类型选择数据源
-      if (searchForm.inventoryType === 'cutter') {
-        filteredData = [...mockCutterData]
-      } else {
-        filteredData = [...mockHandleData]
-      }
-
-      // 根据搜索条件筛选
-      if (searchForm.brandName) {
-        filteredData = filteredData.filter(item =>
-          item.brandName.includes(searchForm.brandName)
-        )
-      }
-      if (searchForm.cabinetCode) {
-        filteredData = filteredData.filter(item =>
-          item.cabinetCode === searchForm.cabinetCode
-        )
-      }
-      if (searchForm.cutterType && searchForm.inventoryType === 'cutter') {
-        filteredData = filteredData.filter(item =>
-          item.cutterType === searchForm.cutterType
-        )
-      }
-      if (searchForm.handleType && searchForm.inventoryType === 'handle') {
-        filteredData = filteredData.filter(item =>
-          item.handleType === searchForm.handleType
-        )
-      }
-      if (searchForm.stockStatus !== '') {
-        filteredData = filteredData.filter(item =>
-          item.stockStatus === searchForm.stockStatus
-        )
-      }
-
-      // 分页处理
-      const start = (pagination.current - 1) * pagination.size
-      const end = start + pagination.size
-
-      tableData.value = filteredData.slice(start, end)
-      pagination.total = filteredData.length
-
+    // 构建符合后端接口的查询参数
+    const params = {
+      statisticsType: searchForm.statisticsType,
+      brandName: searchForm.brandName || undefined,
+      cabinetCode: searchForm.cabinetCode || undefined,
+      cutterType: searchForm.cutterType || undefined,
+      stockStatus: searchForm.stockStatus !== null ? searchForm.stockStatus : undefined,
+      current: pagination.current,
+      size: pagination.size
+    }
+    
+    console.log('请求总库存统计列表，参数:', params)
+    
+    // 调用真实API接口
+    const response = await listTotalInventoryStats(params)
+    
+    console.log('后端响应:', response)
+    
+    // 检查响应状态（TotalStockResponse 统一响应格式）
+    if (response.code === 200 && response.success) {
+      // data 是数组格式的库存列表
+      const records = response.data || []
+      
+      tableData.value = records
+      pagination.total = records.length
+      
       // 计算汇总数据
-      calculateSummary(filteredData)
-
-      loading.value = false
-    }, 500)
+      calculateSummary(records)
+      
+      console.log('总库存统计数据加载成功，共', records.length, '条记录')
+      ElMessage.success('数据加载成功')
+    } else {
+      ElMessage.error(response.msg || '获取数据失败')
+      tableData.value = []
+      pagination.total = 0
+    }
+    
+    loading.value = false
   } catch (error) {
     console.error('获取数据失败:', error)
     ElMessage.error('获取数据失败')
+    tableData.value = []
+    pagination.total = 0
     loading.value = false
   }
 }
@@ -438,6 +615,7 @@ const calculateSummary = (data) => {
 // 搜索
 const onSubmit = () => {
   pagination.current = 1
+  searchForm.current = 1
   getList()
 }
 
@@ -445,6 +623,9 @@ const onSubmit = () => {
 const resetForm = () => {
   searchFormRef.value.resetFields()
   pagination.current = 1
+  pagination.size = 10
+  searchForm.current = 1
+  searchForm.size = 10
   getList()
 }
 
@@ -456,11 +637,13 @@ const handleSelectionChange = (selection) => {
 // 分页相关
 const handleSizeChange = (size) => {
   pagination.size = size
+  searchForm.size = size
   getList()
 }
 
 const handleCurrentChange = (current) => {
   pagination.current = current
+  searchForm.current = current
   getList()
 }
 
@@ -473,6 +656,42 @@ const handleExport = () => {
 const handleRefresh = () => {
   getList()
   ElMessage.success('数据已刷新')
+}
+
+// 查看库位详情
+const handleViewDetail = async (row) => {
+  try {
+    loading.value = true
+    
+    console.log('请求库位详情，ID:', row.id)
+    
+    // 调用真实API接口
+    const response = await getStockLocationDetail(row.id)
+    
+    console.log('库位详情响应:', response)
+    
+    // 检查响应状态（TotalStockResponse 统一响应格式）
+    if (response.code === 200 && response.success) {
+      currentStockDetail.value = response.data
+      detailDialogVisible.value = true
+      
+      console.log('库位详情加载成功')
+    } else {
+      ElMessage.error(response.msg || '获取库位详情失败')
+    }
+    
+    loading.value = false
+  } catch (error) {
+    console.error('获取库位详情失败:', error)
+    ElMessage.error('获取库位详情失败')
+    loading.value = false
+  }
+}
+
+// 关闭详情对话框
+const handleCloseDetail = () => {
+  detailDialogVisible.value = false
+  currentStockDetail.value = null
 }
 
 // 组件挂载时初始化
@@ -551,6 +770,17 @@ onMounted(() => {
 
 :deep(.el-table) {
   .el-tag {
+    font-weight: 500;
+  }
+}
+
+.detail-content {
+  :deep(.el-descriptions__label) {
+    font-weight: 600;
+    background-color: #f5f7fa;
+  }
+  
+  :deep(.el-descriptions__content) {
     font-weight: 500;
   }
 }

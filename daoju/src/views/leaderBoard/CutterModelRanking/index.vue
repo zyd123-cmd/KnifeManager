@@ -60,14 +60,14 @@
         <el-empty v-if="!cutterModelRankingData.length" description="暂无数据" />
         <div v-else class="statistics-content">
           <el-table :data="cutterModelRankingData" border style="width: 100%" height="500">
-            <el-table-column prop="ranking" label="排名" align="center"/>
-            <el-table-column prop="cutterCode" label="刀具型号" align="center"/>
-            <el-table-column prop="cutterType" label="刀具类型" align="center"/>
-            <el-table-column prop="brandName" label="品牌名称" align="center"/>
-            <el-table-column prop="usageCount" label="使用次数" align="center"/>
-            <el-table-column prop="totalAmount" label="总金额(元)" align="center"/>
-            <el-table-column prop="avgLifespan" label="平均寿命(小时)" align="center"/>
-            <el-table-column prop="popularityRate" label="受欢迎度(%)" align="center"/>
+            <el-table-column prop="rank" label="排名" align="center"/>
+            <el-table-column prop="model" label="刀具型号" align="center"/>
+            <el-table-column prop="knife_type" label="刀具类型" align="center"/>
+            <el-table-column prop="brand" label="品牌名称" align="center"/>
+            <el-table-column prop="usage_count" label="使用次数" align="center"/>
+            <el-table-column prop="total_amount" label="总金额(元)" align="center"/>
+            <el-table-column prop="avg_lifespan" label="平均寿命(小时)" align="center"/>
+            <el-table-column prop="popularity" label="受欢迎度(%)" align="center"/>
           </el-table>
         </div>
       </div>
@@ -77,6 +77,7 @@
 
 <script setup name="CutterModelRanking">
 import { reactive, ref, onMounted } from 'vue'
+import { getCutterModelRankingStatistics } from '@/api/borrowReturnInfo/rankingStatistics.js'
 
 // 刀具型号排行数据
 const cutterModelRankingData = ref([])
@@ -98,55 +99,74 @@ onMounted(() => {
 })
 
 // 加载刀具型号排行数据
-const loadCutterModelRankingData = () => {
+const loadCutterModelRankingData = async () => {
   console.log('加载刀具型号排行数据')
-  // 模拟数据
-  let mockData = [
-    { ranking: 1, cutterCode: 'MT001', cutterType: '铣刀', brandName: '三菱', usageCount: 325, totalAmount: 32500, avgLifespan: 125, popularityRate: 95.2 },
-    { ranking: 2, cutterCode: 'KY002', cutterType: '钻头', brandName: '京瓷', usageCount: 298, totalAmount: 29800, avgLifespan: 80, popularityRate: 92.8 },
-    { ranking: 3, cutterCode: 'SU003', cutterType: '车刀', brandName: '住友', usageCount: 285, totalAmount: 28500, avgLifespan: 150, popularityRate: 89.5 },
-    { ranking: 4, cutterCode: 'SV004', cutterType: '铣刀', brandName: '山特维克', usageCount: 268, totalAmount: 26800, avgLifespan: 135, popularityRate: 87.3 },
-    { ranking: 5, cutterCode: 'IS005', cutterType: '钻头', brandName: '伊斯卡', usageCount: 245, totalAmount: 24500, avgLifespan: 75, popularityRate: 85.1 },
-    { ranking: 6, cutterCode: 'TG006', cutterType: '镗刀', brandName: '钨钢', usageCount: 228, totalAmount: 22800, avgLifespan: 110, popularityRate: 82.7 },
-    { ranking: 7, cutterCode: 'CB007', cutterType: '丝锥', brandName: '钴基', usageCount: 215, totalAmount: 21500, avgLifespan: 65, popularityRate: 80.3 },
-    { ranking: 8, cutterCode: 'DM008', cutterType: '铰刀', brandName: '金刚石', usageCount: 198, totalAmount: 19800, avgLifespan: 200, popularityRate: 78.9 }
-  ]
-
-  // 根据查询条件过滤和排序
-  if (cutterModelQueryParams.recordStatus !== '') {
-    // 模拟按记录状态过滤
-    mockData = mockData.filter(item => Math.random() > 0.2)
-  }
-
-  if (cutterModelQueryParams.rankingType !== '' && cutterModelQueryParams.order !== '') {
-    mockData.sort((a, b) => {
-      let valueA, valueB
-      if (cutterModelQueryParams.rankingType === 0) {
-        // 按数量排序
-        valueA = a.usageCount
-        valueB = b.usageCount
-      } else {
-        // 按金额排序
-        valueA = a.totalAmount
-        valueB = b.totalAmount
-      }
-
-      if (cutterModelQueryParams.order === 0) {
-        // 从大到小
-        return valueB - valueA
-      } else {
-        // 从小到大
-        return valueA - valueB
-      }
+  try {
+    // 调用后端接口获取数据
+    const response = await getCutterModelRankingStatistics({
+      startTime: cutterModelQueryParams.startTime,
+      endTime: cutterModelQueryParams.endTime,
+      recordStatus: cutterModelQueryParams.recordStatus,
+      rankingType: cutterModelQueryParams.rankingType,
+      order: cutterModelQueryParams.order
     })
-
-    // 重新设置排名
-    mockData.forEach((item, index) => {
-      item.ranking = index + 1
-    })
+    
+    // 处理返回的数据
+    if (response.data && response.data.knife_model_details) {
+      cutterModelRankingData.value = response.data.knife_model_details
+    } else {
+      cutterModelRankingData.value = []
+    }
+  } catch (error) {
+    console.error('获取刀具型号排行数据失败:', error)
+    // 失败时使用模拟数据
+    let mockData = [
+      { rank: 1, model: 'MT001', knife_type: '铣刀', brand: '三菱', usage_count: 325, total_amount: 32500, avg_lifespan: 125, popularity: 95.2 },
+      { rank: 2, model: 'KY002', knife_type: '钻头', brand: '京瓷', usage_count: 298, total_amount: 29800, avg_lifespan: 80, popularity: 92.8 },
+      { rank: 3, model: 'SU003', knife_type: '车刀', brand: '住友', usage_count: 285, total_amount: 28500, avg_lifespan: 150, popularity: 89.5 },
+      { rank: 4, model: 'SV004', knife_type: '铣刀', brand: '山特维克', usage_count: 268, total_amount: 26800, avg_lifespan: 135, popularity: 87.3 },
+      { rank: 5, model: 'IS005', knife_type: '钻头', brand: '伊斯卡', usage_count: 245, total_amount: 24500, avg_lifespan: 75, popularity: 85.1 },
+      { rank: 6, model: 'TG006', knife_type: '镗刀', brand: '钨钢', usage_count: 228, total_amount: 22800, avg_lifespan: 110, popularity: 82.7 },
+      { rank: 7, model: 'CB007', knife_type: '丝锥', brand: '钴基', usage_count: 215, total_amount: 21500, avg_lifespan: 65, popularity: 80.3 },
+      { rank: 8, model: 'DM008', knife_type: '铰刀', brand: '金刚石', usage_count: 198, total_amount: 19800, avg_lifespan: 200, popularity: 78.9 }
+    ]
+    
+    // 根据查询条件过滤和排序
+    if (cutterModelQueryParams.recordStatus !== '') {
+      // 模拟按记录状态过滤
+      mockData = mockData.filter(item => Math.random() > 0.2)
+    }
+    
+    if (cutterModelQueryParams.rankingType !== '' && cutterModelQueryParams.order !== '') {
+      mockData.sort((a, b) => {
+        let valueA, valueB
+        if (cutterModelQueryParams.rankingType === 0) {
+          // 按数量排序
+          valueA = a.usage_count
+          valueB = b.usage_count
+        } else {
+          // 按金额排序
+          valueA = a.total_amount
+          valueB = b.total_amount
+        }
+        
+        if (cutterModelQueryParams.order === 0) {
+          // 从大到小
+          return valueB - valueA
+        } else {
+          // 从小到大
+          return valueA - valueB
+        }
+      })
+      
+      // 重新设置排名
+      mockData.forEach((item, index) => {
+        item.rank = index + 1
+      })
+    }
+    
+    cutterModelRankingData.value = mockData
   }
-
-  cutterModelRankingData.value = mockData
 }
 
 // 处理搜索

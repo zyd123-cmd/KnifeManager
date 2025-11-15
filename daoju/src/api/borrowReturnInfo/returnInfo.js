@@ -1,9 +1,9 @@
 import request from '@/utils/request'
 
-// 查询还刀信息列表
+// 查询还刀信息列表（废刀回收统计）
 export function listReturnInfo(query) {
   return request({
-    url: '/borrowReturnInfo/returnInfo/list',
+    url: '/api/v1/auditor/waste-knife-recycle',
     method: 'get',
     params: query
   })

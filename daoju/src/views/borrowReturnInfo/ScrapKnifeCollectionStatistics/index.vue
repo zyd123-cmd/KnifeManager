@@ -2,10 +2,26 @@
   <div class="app-container">
     <!-- 顶部查询条件区域 -->
     <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
+      <el-form-item label="还刀码" prop="borrowCode">
+        <el-input
+          v-model="queryParams.borrowCode"
+          placeholder="请输入还刀码"
+          clearable
+          @keyup.enter="handleQuery"
+        />
+      </el-form-item>
       <el-form-item label="刀柜编码" prop="cabinetCode">
         <el-input
           v-model="queryParams.cabinetCode"
           placeholder="请输入刀柜编码"
+          clearable
+          @keyup.enter="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="库位号" prop="stockLoc">
+        <el-input
+          v-model="queryParams.stockLoc"
+          placeholder="请输入库位号"
           clearable
           @keyup.enter="handleQuery"
         />
@@ -116,7 +132,8 @@ import Pagination from '@/components/Pagination'
 // 响应式数据
 const loading = ref(false)
 const showSearch = ref(true)
-const returnInfoList = ref([])
+const returnInfoList = ref([])      // 展开后的还刀详情列表
+const returnInfoGroups = ref([])    // 后端返回的分组数据
 const selectedRows = ref([])
 const detailDialogVisible = ref(false)
 const currentRecord = ref(null)
@@ -124,7 +141,9 @@ const queryRef = ref(null)
 
 // 查询参数
 const queryParams = reactive({
-  cabinetCode: ''
+  borrowCode: '',   // 还刀码
+  cabinetCode: '',  // 刀柜编码
+  stockLoc: ''      // 库位号
 })
 
 // 分页数据
@@ -136,127 +155,98 @@ const pagination = reactive({
   total: 0
 })
 
-// 模拟数据
-const mockReturnInfoData = [
+// 模拟数据（匹配后端收刀柜还刀数据结构）
+const mockReturnInfoGroups = [
   {
-    id: 1,
-    borrowStatus: 0,
-    cabinetCode: 'CAB20250106001',
-    borrowTime: '2025-01-06 14:30:00',
-    borrowUserName: '张三',
-    brandName: '三菱',
-    cutterCode: 'MT-D10-001',
-    cutterType: '铣刀',
-    lendTime: '2025-01-06 08:30:00',
-    lendUserName: '李四',
-    recordStatus: 1,
-    specification: 'Φ10×25×75',
-    stockLoc: 'A01-001'
+    borrowStatus: '0',              // 还刀状态（字符串形式）
+    cabinetCode: 'CAB20250106001',  // 刀柜编码
+    recordStatus: 1,                // 记录状态：0-取刀，1-还刀，2-收刀，3-暂存
+    list: [                         // 还刀详情列表
+      {
+        id: 1,
+        borrowStatus: 0,
+        borrowTime: '2025-01-06 14:30:00',
+        borrowUserName: '张三',
+        brandName: '三菱',
+        cutterCode: 'MT-D10-001',
+        cutterType: '铣刀',
+        lendTime: '2025-01-06 08:30:00',
+        lendUserName: '李四',
+        recordStatus: 1,
+        specification: 'Φ10×25×75',
+        stockLoc: 'A01-001'
+      },
+      {
+        id: 3,
+        borrowStatus: 0,
+        borrowTime: '2025-01-06 16:20:00',
+        borrowUserName: '孙七',
+        brandName: '住友',
+        cutterCode: 'SU-C12-003',
+        cutterType: '车刀片',
+        lendTime: '2025-01-06 10:00:00',
+        lendUserName: '周八',
+        recordStatus: 1,
+        specification: 'CNMG120408',
+        stockLoc: 'C03-008'
+      }
+    ]
   },
   {
-    id: 2,
-    borrowStatus: 1,
+    borrowStatus: '1',
     cabinetCode: 'CAB20250106002',
-    borrowTime: '2025-01-06 15:45:00',
-    borrowUserName: '王五',
-    brandName: '京瓷',
-    cutterCode: 'KY-Z08-002',
-    cutterType: '钻头',
-    lendTime: '2025-01-06 09:15:00',
-    lendUserName: '赵六',
     recordStatus: 2,
-    specification: 'Φ8×30×80',
-    stockLoc: 'B02-015'
+    list: [
+      {
+        id: 2,
+        borrowStatus: 1,
+        borrowTime: '2025-01-06 15:45:00',
+        borrowUserName: '王五',
+        brandName: '京瓷',
+        cutterCode: 'KY-Z08-002',
+        cutterType: '钻头',
+        lendTime: '2025-01-06 09:15:00',
+        lendUserName: '赵六',
+        recordStatus: 2,
+        specification: 'Φ8×30×80',
+        stockLoc: 'B02-015'
+      },
+      {
+        id: 5,
+        borrowStatus: 1,
+        borrowTime: '2025-01-06 18:00:00',
+        borrowUserName: '陈一',
+        brandName: '伊斯卡',
+        cutterCode: 'IS-Z06-005',
+        cutterType: '钻头',
+        lendTime: '2025-01-06 12:45:00',
+        lendUserName: '刘二',
+        recordStatus: 2,
+        specification: 'Φ6×25×70',
+        stockLoc: 'B05-020'
+      }
+    ]
   },
   {
-    id: 3,
-    borrowStatus: 2,
-    cabinetCode: 'CAB20250106001',
-    borrowTime: '2025-01-06 16:20:00',
-    borrowUserName: '孙七',
-    brandName: '住友',
-    cutterCode: 'SU-C12-003',
-    cutterType: '车刀片',
-    lendTime: '2025-01-06 10:00:00',
-    lendUserName: '周八',
-    recordStatus: 0,
-    specification: 'CNMG120408',
-    stockLoc: 'C03-008'
-  },
-  {
-    id: 4,
-    borrowStatus: 3,
+    borrowStatus: '2',
     cabinetCode: 'CAB20250106003',
-    borrowTime: '2025-01-06 17:10:00',
-    borrowUserName: '吴九',
-    brandName: '山特维克',
-    cutterCode: 'SV-M12-004',
-    cutterType: '铣刀',
-    lendTime: '2025-01-06 11:30:00',
-    lendUserName: '郑十',
-    recordStatus: 3,
-    specification: 'Φ12×30×100',
-    stockLoc: 'A04-012'
-  },
-  {
-    id: 5,
-    borrowStatus: 0,
-    cabinetCode: 'CAB20250106002',
-    borrowTime: '2025-01-06 18:00:00',
-    borrowUserName: '陈一',
-    brandName: '伊斯卡',
-    cutterCode: 'IS-Z06-005',
-    cutterType: '钻头',
-    lendTime: '2025-01-06 12:45:00',
-    lendUserName: '刘二',
-    recordStatus: 1,
-    specification: 'Φ6×25×70',
-    stockLoc: 'B05-020'
-  },
-  {
-    id: 6,
-    borrowStatus: 1,
-    cabinetCode: 'CAB20250106001',
-    borrowTime: '2025-01-06 19:15:00',
-    borrowUserName: '钱三',
-    brandName: '瓦尔特',
-    cutterCode: 'WT-C15-006',
-    cutterType: '车刀片',
-    lendTime: '2025-01-06 13:20:00',
-    lendUserName: '孙四',
-    recordStatus: 2,
-    specification: 'WNMG080408',
-    stockLoc: 'D06-025'
-  },
-  {
-    id: 7,
-    borrowStatus: 2,
-    cabinetCode: 'CAB20250106004',
-    borrowTime: '2025-01-06 20:30:00',
-    borrowUserName: '李五',
-    brandName: '肯纳',
-    cutterCode: 'KN-M08-007',
-    cutterType: '铣刀',
-    lendTime: '2025-01-06 14:50:00',
-    lendUserName: '周六',
     recordStatus: 0,
-    specification: 'Φ8×20×60',
-    stockLoc: 'E07-030'
-  },
-  {
-    id: 8,
-    borrowStatus: 0,
-    cabinetCode: 'CAB20250106003',
-    borrowTime: '2025-01-06 21:00:00',
-    borrowUserName: '吴七',
-    brandName: '株洲钻石',
-    cutterCode: 'ZZ-Z10-008',
-    cutterType: '钻头',
-    lendTime: '2025-01-06 15:30:00',
-    lendUserName: '郑八',
-    recordStatus: 1,
-    specification: 'Φ10×35×90',
-    stockLoc: 'A08-035'
+    list: [
+      {
+        id: 4,
+        borrowStatus: 2,
+        borrowTime: '2025-01-06 17:10:00',
+        borrowUserName: '吴九',
+        brandName: '山特维克',
+        cutterCode: 'SV-M12-004',
+        cutterType: '铣刀',
+        lendTime: '2025-01-06 11:30:00',
+        lendUserName: '郑十',
+        recordStatus: 0,
+        specification: 'Φ12×30×100',
+        stockLoc: 'A04-012'
+      }
+    ]
   }
 ]
 
@@ -269,44 +259,62 @@ onMounted(() => {
 const getList = async () => {
   loading.value = true
   
-  // 开发环境使用模拟数据
-  if (import.meta.env.DEV) {
-    setTimeout(() => {
-      // 模拟搜索过滤
-      let filteredData = [...mockReturnInfoData]
+  try {
+    // 构建查询参数（与后端接口完全匹配）
+    const params = {
+      borrowCode: queryParams.borrowCode || undefined,
+      cabinetCode: queryParams.cabinetCode || undefined,
+      stockLoc: queryParams.stockLoc || undefined
+    }
+    
+    console.log('请求废刀回收统计信息，参数:', params)
+    
+    // 调用真实API接口
+    const response = await listReturnInfo(params)
+    
+    console.log('后端响应:', response)
+    
+    // 检查响应状态（WasteKnifeRecycleResponse 统一响应格式）
+    if (response.code === 200 && response.success) {
+      // data 是单个 ReturnKnifeData 对象，不是数组
+      const data = response.data || {}
       
-      // 刀柜编码过滤
-      if (queryParams.cabinetCode) {
-        filteredData = filteredData.filter(item => 
-          item.cabinetCode.includes(queryParams.cabinetCode)
-        )
-      }
+      // 存储单个分组数据（转换为数组格式）
+      returnInfoGroups.value = data.list ? [data] : []
+      
+      // 将分组数据展开为列表（用于表格显示）
+      const list = data.list || []
+      const expandedList = list.map(item => ({
+        ...item,
+        cabinetCode: data.cabinetCode,        // 添加刀柜编码
+        groupBorrowStatus: data.borrowStatus, // 分组的还刀状态
+        groupRecordStatus: data.recordStatus  // 分组的记录状态
+      }))
       
       // 分页处理
       const start = (queryPageNum.value - 1) * queryPageSize.value
       const end = start + queryPageSize.value
       
-      returnInfoList.value = filteredData.slice(start, end)
-      pagination.total = filteredData.length
-      loading.value = false
-    }, 500)
-    return
-  }
-  
-  // 生产环境调用真实接口
-  try {
-    const params = {
-      ...queryParams,
-      pageNum: queryPageNum.value,
-      pageSize: queryPageSize.value
+      returnInfoList.value = expandedList.slice(start, end)
+      pagination.total = expandedList.length
+      
+      console.log('废刀回收统计数据加载成功，共', expandedList.length, '条记录')
+      console.log('还刀数据:', data)
+      console.log('展开后的列表:', expandedList)
+      
+      ElMessage.success('数据加载成功')
+    } else {
+      ElMessage.error(response.msg || '获取数据失败')
+      returnInfoList.value = []
+      pagination.total = 0
     }
-    const response = await listReturnInfo(params)
-    returnInfoList.value = response.rows || []
-    pagination.total = response.total || 0
+    
+    loading.value = false
   } catch (error) {
     console.error('获取还刀信息列表失败:', error)
     ElMessage.error('获取数据失败')
-  } finally {
+    returnInfoList.value = []
+    pagination.total = 0
     loading.value = false
   }
 }
@@ -348,25 +356,29 @@ const handleExport = async () => {
   }
 }
 
-// 还刀状态映射
+// 还刀状态映射（支持数字和字符串）
 const getBorrowStatusText = (status) => {
+  // 转换为字符串进行匹配
+  const statusStr = String(status)
   const statusMap = {
-    0: '修磨',
-    1: '报废',
-    2: '换线',
-    3: '错领'
+    '0': '修磨',
+    '1': '报废',
+    '2': '换线',
+    '3': '错领'
   }
-  return statusMap[status] ?? '未知'
+  return statusMap[statusStr] ?? '未知'
 }
 
 const getBorrowStatusType = (status) => {
+  // 转换为字符串进行匹配
+  const statusStr = String(status)
   const typeMap = {
-    0: 'info',
-    1: 'success',
-    2: 'warning',
-    3: 'danger'
+    '0': 'info',
+    '1': 'success',
+    '2': 'warning',
+    '3': 'danger'
   }
-  return typeMap[status] ?? 'info'
+  return typeMap[statusStr] ?? 'info'
 }
 
 // 记录状态映射

@@ -1,15 +1,15 @@
 import request from '@/utils/request'
 
-// 查询收刀柄柜列表
+// 查询收刀柜列表
 export function listCollectHandleCabinet(query) {
   return request({
-    url: '/cabinetChannel/collectHandleCabinet/list',
+    url: '/qw/knife/app/from/mes/cabinet/stockPutList',
     method: 'get',
     params: query
   })
 }
 
-// 查询收刀柄柜详细
+// 查询收刀柜详细
 export function getCollectHandleCabinet(id) {
   return request({
     url: '/cabinetChannel/collectHandleCabinet/' + id,
@@ -82,8 +82,29 @@ export function batchCollectHandle(data) {
 // 获取收刀柄统计
 export function getCollectHandleStatistics() {
   return request({
-    url: '/cabinetChannel/collectHandleCabinet/statistics',
+    url: '/qw/knife/app/from/mes/cabinet/stockStatisticalNum',
     method: 'get'
+  })
+}
+
+// 货道解绑耗材（清空刀具数量）
+export function unbindCutter(stockId) {
+  return request({
+    url: '/qw/knife/web/from/mes/cabinetStock/stockUnBindCutter',
+    method: 'post',
+    data: { stock_id: stockId }
+  })
+}
+
+// 货道禁用/启用库位
+export function changeBan(stockId, isBan) {
+  return request({
+    url: '/qw/knife/web/from/mes/cabinetStock/changeBan',
+    method: 'post',
+    data: { 
+      stock_id: stockId,
+      is_ban: isBan
+    }
   })
 }
 

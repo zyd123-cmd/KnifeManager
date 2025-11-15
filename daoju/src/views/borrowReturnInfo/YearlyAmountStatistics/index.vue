@@ -3,18 +3,18 @@
     <div class="tab-content">
       <div class="content-header">
         <h3>全年取刀金额统计</h3>
-        <p>统计全年各项取刀金额指标</p>
+        <p>统计全年各月取刀金额指标</p>
       </div>
       <div class="content-body">
         <el-empty v-if="!yearlyAmountData.length" description="暂无数据" />
         <div v-else class="statistics-content">
           <el-table :data="yearlyAmountData" border style="width: 100%" height="500">
-            <el-table-column prop="month" label="月份" align="center"/>
-            <el-table-column prop="totalAmount" label="总金额(元)" align="center"/>
-            <el-table-column prop="avgAmount" label="平均金额(元)" align="center"/>
-            <el-table-column prop="maxAmount" label="最高金额(元)" align="center"/>
-            <el-table-column prop="minAmount" label="最低金额(元)" align="center"/>
-            <el-table-column prop="growthRate" label="增长率(%)" align="center"/>
+            <el-table-column prop="title" label="月份" align="center" width="200"/>
+            <el-table-column prop="data" label="总金额(元)" align="center">
+              <template #default="scope">
+                <span>¥{{ typeof scope.row.data === 'number' ? scope.row.data.toLocaleString() : scope.row.data }}</span>
+              </template>
+            </el-table-column>
           </el-table>
         </div>
       </div>
@@ -24,9 +24,12 @@
 
 <script setup name="YearlyAmountStatistics">
 import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { getYearlyAmountStatistics } from '@/api/borrowReturnInfo/rankingStatistics'
 
 // 全年取刀金额数据
 const yearlyAmountData = ref([])
+const loading = ref(false)
 
 // 页面挂载时加载数据
 onMounted(() => {
@@ -34,23 +37,62 @@ onMounted(() => {
 })
 
 // 加载全年取刀金额数据
-const loadYearlyAmountData = () => {
-  console.log('加载全年取刀金额数据')
-  // 模拟数据（实际项目中可替换为接口请求）
-  yearlyAmountData.value = [
-    { month: '1月', totalAmount: 125000, avgAmount: 100, maxAmount: 500, minAmount: 50, growthRate: 5.2 },
-    { month: '2月', totalAmount: 118000, avgAmount: 100, maxAmount: 480, minAmount: 45, growthRate: -5.6 },
-    { month: '3月', totalAmount: 132000, avgAmount: 100, maxAmount: 520, minAmount: 55, growthRate: 11.9 },
-    { month: '4月', totalAmount: 128000, avgAmount: 100, maxAmount: 510, minAmount: 50, growthRate: -3.0 },
-    { month: '5月', totalAmount: 135000, avgAmount: 100, maxAmount: 530, minAmount: 60, growthRate: 5.5 },
-    { month: '6月', totalAmount: 142000, avgAmount: 100, maxAmount: 550, minAmount: 55, growthRate: 5.2 },
-    { month: '7月', totalAmount: 138000, avgAmount: 100, maxAmount: 540, minAmount: 50, growthRate: -2.8 },
-    { month: '8月', totalAmount: 145000, avgAmount: 100, maxAmount: 560, minAmount: 65, growthRate: 5.1 },
-    { month: '9月', totalAmount: 139000, avgAmount: 100, maxAmount: 545, minAmount: 55, growthRate: -4.1 },
-    { month: '10月', totalAmount: 148000, avgAmount: 100, maxAmount: 570, minAmount: 60, growthRate: 6.5 },
-    { month: '11月', totalAmount: 152000, avgAmount: 100, maxAmount: 580, minAmount: 65, growthRate: 2.7 },
-    { month: '12月', totalAmount: 158000, avgAmount: 100, maxAmount: 600, minAmount: 70, growthRate: 3.9 }
-  ]
+const loadYearlyAmountData = async () => {
+  loading.value = true
+  
+  try {
+    // 调用真实API接口（无需请求参数）
+    console.log('请求全年取刀金额统计...')
+    
+    const response = await getYearlyAmountStatistics()
+    
+    console.log('后端响应:', response)
+    
+    // 检查响应状态（ChartsResponse 统一响应格式）
+    if (response.code === 200 && response.success) {
+      // 检查data是否存在
+      if (!response.data) {
+        ElMessage.warning('数据为空')
+        yearlyAmountData.value = []
+        return
+      }
+      
+      const { titleList, dataList } = response.data
+      
+      console.log('月份列表:', titleList)
+      console.log('金额列表:', dataList)
+      
+      // 验证数据完整性
+      if (titleList && dataList && titleList.length === dataList.length) {
+        // 将titleList和dataList转换为表格数据格式
+        yearlyAmountData.value = titleList.map((title, index) => ({
+          title: title,
+          data: dataList[index]
+        }))
+        
+        // 计算全年总金额
+        const totalAmount = dataList.reduce((sum, amount) => sum + amount, 0)
+        
+        console.log(`全年取刀金额数据加载成功，共${titleList.length}条记录`)
+        console.log(`全年总金额: ￥${totalAmount.toLocaleString()}`)
+        
+        ElMessage.success(`成功加载${titleList.length}个月份的数据，总金额￥${totalAmount.toLocaleString()}`)
+      } else {
+        ElMessage.warning('数据格式不匹配')
+        yearlyAmountData.value = []
+      }
+    } else {
+      // 使用后端返回的msg字段
+      ElMessage.error(response.msg || '获取数据失败')
+      yearlyAmountData.value = []
+    }
+  } catch (error) {
+    console.error('获取全年取刀金额数据失败:', error)
+    ElMessage.error('获取数据失败，请稍后重试')
+    yearlyAmountData.value = []
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 

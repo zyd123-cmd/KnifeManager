@@ -1,7 +1,5 @@
 <template>
   <div class="container">
-    <!-- <div>出入库统计</div> -->
-    
     <!-- 顶部查询条件区域 -->
     <div class="topSearchDiv">
       <el-form :inline="true" :model="searchForm" ref="searchFormRef" class="demo-form-inline">
@@ -69,9 +67,11 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" align="center"/>
+        <el-table-column prop="id" label="记录ID" align="center" width="80"/>
         <el-table-column prop="account" label="用户名" align="center" width="100"/>
         <el-table-column prop="name" label="用户名称" align="center" width="100"/>
         <el-table-column prop="brandName" label="品牌名称" align="center" width="120"/>
+        <el-table-column prop="brandCode" label="品牌编码" align="center" width="120"/>
         <el-table-column prop="cutterType" label="刀具类型" align="center" width="120"/>
         <el-table-column prop="cutterCode" label="刀具型号" align="center" width="150"/>
         <el-table-column prop="specification" label="规格" align="center" width="120"/>
@@ -87,10 +87,10 @@
           </template>
         </el-table-column>
         <el-table-column prop="stockLoc" label="库位号" align="center" width="120"/>
-        <el-table-column prop="stocktype" label="库存类型" align="center" width="100">
+        <el-table-column prop="stockType" label="库存类型" align="center" width="100">
           <template #default="scope">
-            <el-tag :type="scope.row.stocktype === 0 ? 'success' : 'warning'">
-              {{ scope.row.stocktype === 0 ? '入库' : '出库' }}
+            <el-tag :type="scope.row.stockType === 0 ? 'success' : 'warning'">
+              {{ scope.row.stockType === 0 ? '入库' : '出库' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -131,20 +131,22 @@
     <el-dialog v-model="detailDialogVisible" title="出入库记录详情" width="800px">
       <div v-if="currentRecord">
         <el-descriptions :column="2" border>
+          <el-descriptions-item label="记录ID">{{ currentRecord.id }}</el-descriptions-item>
           <el-descriptions-item label="用户名">{{ currentRecord.account }}</el-descriptions-item>
           <el-descriptions-item label="用户名称">{{ currentRecord.name }}</el-descriptions-item>
           <el-descriptions-item label="品牌名称">{{ currentRecord.brandName }}</el-descriptions-item>
           <el-descriptions-item label="品牌编码">{{ currentRecord.brandCode }}</el-descriptions-item>
           <el-descriptions-item label="刀具类型">{{ currentRecord.cutterType }}</el-descriptions-item>
           <el-descriptions-item label="刀具型号">{{ currentRecord.cutterCode }}</el-descriptions-item>
+          <el-descriptions-item label="耗材主键">{{ currentRecord.cutterId }}</el-descriptions-item>
           <el-descriptions-item label="规格">{{ currentRecord.specification }}</el-descriptions-item>
           <el-descriptions-item label="数量">{{ currentRecord.quantity }}</el-descriptions-item>
           <el-descriptions-item label="单价">{{ currentRecord.price ? currentRecord.price.toFixed(2) + '元' : '0.00元' }}</el-descriptions-item>
           <el-descriptions-item label="历史单价">{{ currentRecord.oldPrice ? currentRecord.oldPrice.toFixed(2) + '元' : '0.00元' }}</el-descriptions-item>
           <el-descriptions-item label="库位号">{{ currentRecord.stockLoc }}</el-descriptions-item>
           <el-descriptions-item label="库存类型">
-            <el-tag :type="currentRecord.stocktype === 0 ? 'success' : 'warning'">
-              {{ currentRecord.stocktype === 0 ? '入库' : '出库' }}
+            <el-tag :type="currentRecord.stockType === 0 ? 'success' : 'warning'">
+              {{ currentRecord.stockType === 0 ? '入库' : '出库' }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="业务状态">
@@ -156,20 +158,12 @@
           <el-descriptions-item label="刀具柜编码">{{ currentRecord.cabinetCode }}</el-descriptions-item>
           <el-descriptions-item label="工厂名称">{{ currentRecord.factoryName }}</el-descriptions-item>
           <el-descriptions-item label="车间名称">{{ currentRecord.workshopName }}</el-descriptions-item>
-          <el-descriptions-item label="创建部门">{{ currentRecord.createDept }}</el-descriptions-item>
-          <el-descriptions-item label="创建人">{{ currentRecord.createUser }}</el-descriptions-item>
-          <el-descriptions-item label="更新人">{{ currentRecord.updateUser }}</el-descriptions-item>
+          <el-descriptions-item label="操作详情编码">{{ currentRecord.detailsCode }}</el-descriptions-item>
+          <el-descriptions-item label="操作详情名称">{{ currentRecord.detailsName }}</el-descriptions-item>
           <el-descriptions-item label="操作人">{{ currentRecord.operator }}</el-descriptions-item>
           <el-descriptions-item label="创建时间">{{ currentRecord.createTime }}</el-descriptions-item>
           <el-descriptions-item label="更新时间">{{ currentRecord.updateTime }}</el-descriptions-item>
-          <el-descriptions-item label="操作详情">{{ currentRecord.detailsName }}</el-descriptions-item>
-          <el-descriptions-item label="备注" v-if="currentRecord.remake">{{ currentRecord.remake }}</el-descriptions-item>
-          <el-descriptions-item label="租户ID">{{ currentRecord.tenantId }}</el-descriptions-item>
-          <el-descriptions-item label="是否删除">
-            <el-tag :type="currentRecord.isDeleted === 0 ? 'success' : 'danger'">
-              {{ currentRecord.isDeleted === 0 ? '正常' : '已删除' }}
-            </el-tag>
-          </el-descriptions-item>
+          <el-descriptions-item label="备注" :span="2" v-if="currentRecord.remake">{{ currentRecord.remake }}</el-descriptions-item>
         </el-descriptions>
       </div>
       <template #footer>
@@ -184,7 +178,8 @@
 <script setup name="StockRecord">
 import { ref, reactive, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-// import { getStockRecordList, exportStockRecord } from '@/api/historyRecord/stockRecord'
+import { getStockRecordList, exportStockRecord, getStockRecordDetail } from '@/api/historyRecord/stockRecord'
+import { saveAs } from 'file-saver'
 
 // 响应式数据
 const loading = ref(false)
@@ -193,27 +188,27 @@ const selectedRows = ref([])
 const detailDialogVisible = ref(false)
 const currentRecord = ref(null)
 
-// 搜索表单
+// 搜索表单（与后端接口参数完全匹配）
 const searchForm = reactive({
+  current: 1,
+  size: 10,
   startTime: '',
   endTime: '',
   recordStatus: null,
   rankingType: null,
-  order: null,
-  current: 1,
-  size: 20
+  order: null
 })
 
 // 分页数据
 const pagination = reactive({
   current: 1,
-  size: 20,
+  size: 10,
   total: 0
 })
 
 const searchFormRef = ref()
 
-// 模拟数据
+// 模拟数据（与后端出参字段完全匹配）
 const mockData = [
   {
     id: 1,
@@ -223,16 +218,13 @@ const mockData = [
     brandName: '三菱',
     cabinetCode: 'CAB001',
     cabinetName: '第一车间刀具柜A',
-    createDept: 1,
     createTime: '2024-12-27 08:30:00',
-    createUser: 1001,
     cutterCode: 'APMT1135PDER-M2',
     cutterId: 2001,
     cutterType: '车刀片',
     detailsCode: 'DET001',
     detailsName: '正常入库操作',
     factoryName: '主工厂',
-    isDeleted: 0,
     oldPrice: 120.00,
     operator: '张三',
     price: 125.50,
@@ -241,10 +233,8 @@ const mockData = [
     specification: 'APMT1135PDER-M2',
     status: 1,
     stockLoc: 'A01-001',
-    stocktype: 0,
-    tenantId: 'T001',
+    stockType: 0,
     updateTime: '2024-12-27 08:35:00',
-    updateUser: 1001,
     workshopName: '第一车间'
   },
   {
@@ -255,16 +245,13 @@ const mockData = [
     brandName: '京瓷',
     cabinetCode: 'CAB002',
     cabinetName: '第二车间刀具柜B',
-    createDept: 2,
     createTime: '2024-12-27 09:15:00',
-    createUser: 1002,
     cutterCode: 'DCMT11T304-HQ',
     cutterId: 2002,
     cutterType: '铣刀',
     detailsCode: 'DET002',
     detailsName: '工具领用出库',
     factoryName: '主工厂',
-    isDeleted: 0,
     oldPrice: 85.00,
     operator: '李四',
     price: 89.30,
@@ -273,10 +260,8 @@ const mockData = [
     specification: 'DCMT11T304-HQ',
     status: 2,
     stockLoc: 'B02-015',
-    stocktype: 1,
-    tenantId: 'T001',
+    stockType: 1,
     updateTime: '2024-12-27 09:20:00',
-    updateUser: 1002,
     workshopName: '第二车间'
   },
   {
@@ -287,16 +272,13 @@ const mockData = [
     brandName: '山特维克',
     cabinetCode: 'CAB001',
     cabinetName: '第一车间刀具柜A',
-    createDept: 1,
     createTime: '2024-12-27 10:45:00',
-    createUser: 1003,
     cutterCode: 'CNMG120408-PM',
     cutterId: 2003,
     cutterType: '钻头',
     detailsCode: 'DET003',
     detailsName: '新品入库',
     factoryName: '主工厂',
-    isDeleted: 0,
     oldPrice: 150.00,
     operator: '王五',
     price: 156.80,
@@ -305,10 +287,8 @@ const mockData = [
     specification: 'CNMG120408-PM',
     status: 1,
     stockLoc: 'C03-008',
-    stocktype: 0,
-    tenantId: 'T001',
+    stockType: 0,
     updateTime: '2024-12-27 10:50:00',
-    updateUser: 1003,
     workshopName: '第一车间'
   },
   {
@@ -319,16 +299,13 @@ const mockData = [
     brandName: '瓦尔特',
     cabinetCode: 'CAB003',
     cabinetName: '第三车间刀具柜C',
-    createDept: 3,
     createTime: '2024-12-26 17:20:00',
-    createUser: 1004,
     cutterCode: 'WNMG080408-MS3',
     cutterId: 2004,
     cutterType: '车刀片',
     detailsCode: 'DET004',
     detailsName: '工具归还入库',
     factoryName: '主工厂',
-    isDeleted: 0,
     oldPrice: 95.00,
     operator: '赵六',
     price: 98.60,
@@ -337,10 +314,8 @@ const mockData = [
     specification: 'WNMG080408-MS3',
     status: 4,
     stockLoc: 'D04-012',
-    stocktype: 0,
-    tenantId: 'T001',
+    stockType: 0,
     updateTime: '2024-12-26 17:25:00',
-    updateUser: 1004,
     workshopName: '第三车间'
   },
   {
@@ -351,16 +326,13 @@ const mockData = [
     brandName: '伊斯卡',
     cabinetCode: 'CAB002',
     cabinetName: '第二车间刀具柜B',
-    createDept: 2,
     createTime: '2024-12-25 15:45:00',
-    createUser: 1005,
     cutterCode: 'ADKT1505PDR-HM',
     cutterId: 2005,
     cutterType: '铣刀',
     detailsCode: 'DET005',
     detailsName: '异常出库处理',
     factoryName: '主工厂',
-    isDeleted: 0,
     oldPrice: 230.00,
     operator: '孙七',
     price: 234.90,
@@ -369,10 +341,8 @@ const mockData = [
     specification: 'ADKT1505PDR-HM',
     status: 5,
     stockLoc: 'E05-020',
-    stocktype: 1,
-    tenantId: 'T001',
+    stockType: 1,
     updateTime: '2024-12-25 15:50:00',
-    updateUser: 1005,
     workshopName: '第二车间'
   }
 ]
@@ -383,64 +353,76 @@ onMounted(() => {
 })
 
 // 方法
-const getList = () => {
+const getList = async () => {
   loading.value = true
   
-  // 模拟API调用
-  setTimeout(() => {
-    // 这里可以根据搜索条件过滤数据
-    let filteredData = [...mockData]
-    
-    // 根据recordStatus过滤
-    if (searchForm.recordStatus !== null) {
-      filteredData = filteredData.filter(item => item.status === searchForm.recordStatus)
+  try {
+    // 构建查询参数（与后端接口完全匹配）
+    const params = {
+      current: searchForm.current,
+      size: searchForm.size,
+      startTime: searchForm.startTime || undefined,    // 空字符串转为 undefined
+      endTime: searchForm.endTime || undefined,
+      recordStatus: searchForm.recordStatus !== null ? searchForm.recordStatus : undefined,
+      rankingType: searchForm.rankingType !== null ? searchForm.rankingType : undefined,
+      order: searchForm.order !== null ? searchForm.order : undefined
     }
     
-    // 根据时间范围过滤
-    if (searchForm.startTime) {
-      filteredData = filteredData.filter(item => item.createTime >= searchForm.startTime)
-    }
-    if (searchForm.endTime) {
-      filteredData = filteredData.filter(item => item.createTime <= searchForm.endTime)
-    }
+    console.log('请求参数:', params)
     
-    // 排序
-    if (searchForm.rankingType !== null && searchForm.order !== null) {
-      filteredData.sort((a, b) => {
-        let valueA, valueB
-        if (searchForm.rankingType === 0) {
-          // 按数量排序
-          valueA = a.quantity
-          valueB = b.quantity
-        } else {
-          // 按金额排序
-          valueA = a.price
-          valueB = b.price
-        }
-        
-        if (searchForm.order === 0) {
-          // 从大到小
-          return valueB - valueA
-        } else {
-          // 从小到大
-          return valueA - valueB
-        }
-      })
-    }
+    // 调用API获取数据
+    const response = await getStockRecordList(params)
     
-    tableData.value = filteredData
-    pagination.total = filteredData.length
+    console.log('后端响应:', response)
+    
+    // 处理响应数据（统一响应格式）
+    if (response.code === 200 && response.success) {
+      // data中包含分页数据：current, size, total, pages, records
+      const { current, size, total, pages, records } = response.data || {}
+      
+      // 更新表格数据
+      tableData.value = records || []
+      
+      // 更新分页信息
+      pagination.current = current || 1
+      pagination.size = size || 10
+      pagination.total = total || 0
+      
+      // 同步到搜索表单
+      searchForm.current = current || 1
+      searchForm.size = size || 10
+      
+      console.log(`分页信息: 当前页=${current}, 每页${size}条, 总数=${total}, 总页数=${pages}`)
+      console.log('表格数据:', records)
+      
+      ElMessage.success(`成功获取${records?.length || 0}条数据`)
+    } else {
+      ElMessage.error(response.msg || '获取数据失败')
+      tableData.value = []
+      pagination.total = 0
+    }
+  } catch (error) {
+    console.error('获取数据失败:', error)
+    ElMessage.error('获取数据失败，请稍后重试')
+    tableData.value = []
+    pagination.total = 0
+  } finally {
     loading.value = false
-  }, 500)
+  }
 }
 
 const handleSearch = () => {
   pagination.current = 1
+  // 同步分页参数到搜索表单
+  searchForm.current = pagination.current
+  searchForm.size = pagination.size
   getList()
 }
 
 const resetSearch = () => {
   Object.assign(searchForm, {
+    current: 1,
+    size: 10,
     startTime: '',
     endTime: '',
     recordStatus: null,
@@ -459,11 +441,13 @@ const handleSelectionChange = (selection) => {
 
 const handleSizeChange = (size) => {
   pagination.size = size
+  searchForm.size = size
   getList()
 }
 
 const handleCurrentChange = (current) => {
   pagination.current = current
+  searchForm.current = current
   getList()
 }
 
@@ -472,14 +456,43 @@ const handleDetail = (row) => {
   detailDialogVisible.value = true
 }
 
-const handleExport = () => {
+const handleExport = async () => {
   if (selectedRows.value.length === 0) {
     ElMessage.warning('请选择要导出的记录')
     return
   }
 
-  // 实际导出逻辑
-  console.log('导出数据:', selectedRows.value)
+  try {
+    loading.value = true
+    
+    // 构建导出参数（与后端接口完全匹配）
+    const exportParams = {
+      startTime: searchForm.startTime || undefined,
+      endTime: searchForm.endTime || undefined,
+      recordStatus: searchForm.recordStatus !== null ? searchForm.recordStatus : undefined,
+      rankingType: searchForm.rankingType !== null ? searchForm.rankingType : undefined,
+      order: searchForm.order !== null ? searchForm.order : undefined
+    }
+    
+    console.log('导出参数:', exportParams)
+    
+    const response = await exportStockRecord(exportParams)
+    
+    console.log('导出响应:', response)
+    
+    // 获取文件名
+    const fileName = `出入库记录_${new Date().getTime()}.xlsx`
+    
+    // 下载文件
+    saveAs(new Blob([response]), fileName)
+    
+    ElMessage.success('导出成功')
+  } catch (error) {
+    console.error('导出失败:', error)
+    ElMessage.error('导出失败，请稍后重试')
+  } finally {
+    loading.value = false
+  }
 }
 
 // 状态文本和样式

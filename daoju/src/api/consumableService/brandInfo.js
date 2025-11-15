@@ -1,9 +1,9 @@
 import request from '@/utils/request'
 
-// 查询品牌信息列表
+// 分页查询品牌信息
 export function listBrandInfo(query) {
   return request({
-    url: '/consumableService/brandInfo/list',
+    url: '/qw/knife/web/from/mes/cutter/pageListBrand',
     method: 'get',
     params: query
   })
@@ -20,7 +20,7 @@ export function getBrandInfo(id) {
 // 新增品牌信息
 export function addBrandInfo(data) {
   return request({
-    url: '/consumableService/brandInfo',
+    url: '/qw/knife/web/from/mes/cutter/submitBrand',
     method: 'post',
     data: data
   })
@@ -29,8 +29,8 @@ export function addBrandInfo(data) {
 // 修改品牌信息
 export function updateBrandInfo(data) {
   return request({
-    url: '/consumableService/brandInfo',
-    method: 'put',
+    url: '/qw/knife/web/from/mes/cutter/submitBrand',
+    method: 'post',
     data: data
   })
 }
@@ -38,16 +38,17 @@ export function updateBrandInfo(data) {
 // 删除品牌信息
 export function delBrandInfo(id) {
   return request({
-    url: '/consumableService/brandInfo/' + id,
-    method: 'delete'
+    url: '/qw/knife/web/from/mes/cutter/delBrand',
+    method: 'post',
+    data: id
   })
 }
 
 // 批量删除品牌信息
 export function batchDelBrandInfo(ids) {
   return request({
-    url: '/consumableService/brandInfo/batch',
-    method: 'delete',
+    url: '/qw/knife/web/from/mes/cutter/delBrand',
+    method: 'post',
     data: ids
   })
 }

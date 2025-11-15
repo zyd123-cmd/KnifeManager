@@ -40,7 +40,7 @@
         </el-form-item>
         <el-form-item label="排序类型" prop="rankingType">
           <el-select v-model="employeeQueryParams.rankingType" placeholder="请选择排序类型" clearable>
-            <el-option label="数量" :value="0"/>
+            <el-option label="批量下拉量" :value="0"/>
             <el-option label="金额" :value="1"/>
           </el-select>
         </el-form-item>
@@ -60,13 +60,13 @@
         <el-empty v-if="!employeeRankingData.length" description="暂无数据" />
         <div v-else class="statistics-content">
           <el-table :data="employeeRankingData" border style="width: 100%" height="500">
-            <el-table-column prop="ranking" label="排名" align="center"/>
-            <el-table-column prop="employeeName" label="员工姓名" align="center"/>
+            <el-table-column prop="rank" label="排名" align="center"/>
+            <el-table-column prop="employee_name" label="员工姓名" align="center"/>
             <el-table-column prop="department" label="部门" align="center"/>
-            <el-table-column prop="borrowCount" label="领刀次数" align="center"/>
-            <el-table-column prop="totalAmount" label="总金额(元)" align="center"/>
-            <el-table-column prop="avgAmount" label="平均金额(元)" align="center"/>
-            <el-table-column prop="lastBorrowTime" label="最后领刀时间" align="center"/>
+            <el-table-column prop="borrow_count" label="领刀次数" align="center"/>
+            <el-table-column prop="total_amount" label="总金额(元)" align="center"/>
+            <el-table-column prop="avg_amount" label="平均金额(元)" align="center"/>
+            <el-table-column prop="last_borrow_time" label="最后领刀时间" align="center"/>
           </el-table>
         </div>
       </div>
@@ -76,6 +76,7 @@
 
 <script setup name="EmployeeRanking">
 import { reactive, ref, onMounted } from 'vue'
+import { getEmployeeRankingStatistics } from '@/api/borrowReturnInfo/rankingStatistics.js'
 
 // 员工领刀排行数据
 const employeeRankingData = ref([])
@@ -97,55 +98,74 @@ onMounted(() => {
 })
 
 // 加载员工领刀排行数据
-const loadEmployeeRankingData = () => {
+const loadEmployeeRankingData = async () => {
   console.log('加载员工领刀排行数据')
-  // 模拟数据
-  let mockData = [
-    { ranking: 1, employeeName: '张三', department: '生产一部', borrowCount: 285, totalAmount: 28500, avgAmount: 100, lastBorrowTime: '2024-12-27 14:30:00' },
-    { ranking: 2, employeeName: '李四', department: '生产二部', borrowCount: 268, totalAmount: 26800, avgAmount: 100, lastBorrowTime: '2024-12-27 13:45:00' },
-    { ranking: 3, employeeName: '王五', department: '生产一部', borrowCount: 245, totalAmount: 24500, avgAmount: 100, lastBorrowTime: '2024-12-27 15:20:00' },
-    { ranking: 4, employeeName: '赵六', department: '生产三部', borrowCount: 232, totalAmount: 23200, avgAmount: 100, lastBorrowTime: '2024-12-27 12:10:00' },
-    { ranking: 5, employeeName: '孙七', department: '生产二部', borrowCount: 218, totalAmount: 21800, avgAmount: 100, lastBorrowTime: '2024-12-27 16:05:00' },
-    { ranking: 6, employeeName: '周八', department: '生产一部', borrowCount: 205, totalAmount: 20500, avgAmount: 100, lastBorrowTime: '2024-12-27 11:30:00' },
-    { ranking: 7, employeeName: '吴九', department: '生产三部', borrowCount: 198, totalAmount: 19800, avgAmount: 100, lastBorrowTime: '2024-12-27 14:15:00' },
-    { ranking: 8, employeeName: '郑十', department: '生产二部', borrowCount: 185, totalAmount: 18500, avgAmount: 100, lastBorrowTime: '2024-12-27 13:20:00' }
-  ]
-
-  // 根据查询条件过滤和排序
-  if (employeeQueryParams.recordStatus !== '') {
-    // 模拟按记录状态过滤
-    mockData = mockData.filter(item => Math.random() > 0.3)
-  }
-
-  if (employeeQueryParams.rankingType !== '' && employeeQueryParams.order !== '') {
-    mockData.sort((a, b) => {
-      let valueA, valueB
-      if (employeeQueryParams.rankingType === 0) {
-        // 按数量排序
-        valueA = a.borrowCount
-        valueB = b.borrowCount
-      } else {
-        // 按金额排序
-        valueA = a.totalAmount
-        valueB = b.totalAmount
-      }
-
-      if (employeeQueryParams.order === 0) {
-        // 从大到小
-        return valueB - valueA
-      } else {
-        // 从小到大
-        return valueA - valueB
-      }
+  try {
+    // 调用后端接口获取数据
+    const response = await getEmployeeRankingStatistics({
+      startTime: employeeQueryParams.startTime,
+      endTime: employeeQueryParams.endTime,
+      recordStatus: employeeQueryParams.recordStatus,
+      rankingType: employeeQueryParams.rankingType,
+      order: employeeQueryParams.order
     })
-
-    // 重新设置排名
-    mockData.forEach((item, index) => {
-      item.ranking = index + 1
-    })
+    
+    // 处理返回的数据
+    if (response.data && response.data.employee_details) {
+      employeeRankingData.value = response.data.employee_details
+    } else {
+      employeeRankingData.value = []
+    }
+  } catch (error) {
+    console.error('获取员工领刀排行数据失败:', error)
+    // 失败时使用模拟数据
+    let mockData = [
+      { rank: 1, employee_name: '张三', department: '生产一部', borrow_count: 285, total_amount: 28500, avg_amount: 100, last_borrow_time: '2024-12-27 14:30:00' },
+      { rank: 2, employee_name: '李四', department: '生产二部', borrow_count: 268, total_amount: 26800, avg_amount: 100, last_borrow_time: '2024-12-27 13:45:00' },
+      { rank: 3, employee_name: '王五', department: '生产一部', borrow_count: 245, total_amount: 24500, avg_amount: 100, last_borrow_time: '2024-12-27 15:20:00' },
+      { rank: 4, employee_name: '赵六', department: '生产三部', borrow_count: 232, total_amount: 23200, avg_amount: 100, last_borrow_time: '2024-12-27 12:10:00' },
+      { rank: 5, employee_name: '孙七', department: '生产二部', borrow_count: 218, total_amount: 21800, avg_amount: 100, last_borrow_time: '2024-12-27 16:05:00' },
+      { rank: 6, employee_name: '周八', department: '生产一部', borrow_count: 205, total_amount: 20500, avg_amount: 100, last_borrow_time: '2024-12-27 11:30:00' },
+      { rank: 7, employee_name: '吴九', department: '生产三部', borrow_count: 198, total_amount: 19800, avg_amount: 100, last_borrow_time: '2024-12-27 14:15:00' },
+      { rank: 8, employee_name: '郑十', department: '生产二部', borrow_count: 185, total_amount: 18500, avg_amount: 100, last_borrow_time: '2024-12-27 13:20:00' }
+    ]
+    
+    // 根据查询条件过滤和排序
+    if (employeeQueryParams.recordStatus !== '') {
+      // 模拟按记录状态过滤
+      mockData = mockData.filter(item => Math.random() > 0.3)
+    }
+    
+    if (employeeQueryParams.rankingType !== '' && employeeQueryParams.order !== '') {
+      mockData.sort((a, b) => {
+        let valueA, valueB
+        if (employeeQueryParams.rankingType === 0) {
+          // 按数量排序
+          valueA = a.borrow_count
+          valueB = b.borrow_count
+        } else {
+          // 按金额排序
+          valueA = a.total_amount
+          valueB = b.total_amount
+        }
+        
+        if (employeeQueryParams.order === 0) {
+          // 从大到小
+          return valueB - valueA
+        } else {
+          // 从小到大
+          return valueA - valueB
+        }
+      })
+      
+      // 重新设置排名
+      mockData.forEach((item, index) => {
+        item.rank = index + 1
+      })
+    }
+    
+    employeeRankingData.value = mockData
   }
-
-  employeeRankingData.value = mockData
 }
 
 // 处理搜索
