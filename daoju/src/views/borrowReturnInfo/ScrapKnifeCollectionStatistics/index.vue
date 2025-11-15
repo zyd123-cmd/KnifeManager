@@ -2,14 +2,14 @@
   <div class="app-container">
     <!-- 顶部查询条件区域 -->
     <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-      <!-- <el-form-item label="还刀码" prop="borrowCode">
+      <el-form-item label="还刀码" prop="borrowCode">
         <el-input
           v-model="queryParams.borrowCode"
           placeholder="请输入还刀码"
           clearable
           @keyup.enter="handleQuery"
         />
-      </el-form-item> -->
+      </el-form-item>
       <el-form-item label="刀柜编码" prop="cabinetCode">
         <el-input
           v-model="queryParams.cabinetCode"

@@ -404,6 +404,7 @@
 <script setup>
 import { reactive, ref, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { listBrandInfo, addBrandInfo, updateBrandInfo, delBrandInfo, batchDelBrandInfo, getSupplierList, getCorporateList } from '@/api/consumableService/brandInfo.js'
 
 // 表单引用
 const formInlineRes = ref()
@@ -426,7 +427,8 @@ const loading = ref(false)
 const pagination = reactive({
   current: 1,
   size: 10,
-  total: 0
+  total: 0,
+  pages: 0
 })
 
 // 查询参数
@@ -437,9 +439,10 @@ const queryParams = reactive({
   supplierName: '',
   status: '',
   createUser: '',
-  createTimeStart: '',
-  createTimeEnd: '',
-  type: 'cuttingTool' // 固定为刀具品牌
+  startTime: '',
+  endTime: '',
+  current: 1,
+  size: 10
 })
 
 // 表格数据
@@ -456,41 +459,33 @@ const currentBrand = ref(null)
 
 // 新增表单数据
 const addForm = reactive({
-  type: 'cuttingTool', // 固定为刀具品牌
   brandCode: '',
   brandName: '',
   corporateName: '',
-  createDept: '',
-  phone: '',
-  status: 'active',
   supplierName: '',
   supplierUser: '',
-  createUser: '',
-  createTime: '',
-  updateUser: '',
-  updateTime: '',
-  tenantId: '',
-  isDeleted: 0
+  phone: '',
+  createDept: null,
+  status: 1, // 业务状态改为数字类型
+  createUser: null,
+  updateUser: null,
+  tenantId: ''
 })
 
 // 修改表单数据
 const editForm = reactive({
   id: null,
-  type: 'cuttingTool', // 固定为刀具品牌
   brandCode: '',
   brandName: '',
   corporateName: '',
-  createDept: '',
-  phone: '',
-  status: 'active',
   supplierName: '',
   supplierUser: '',
-  createUser: '',
-  createTime: '',
-  updateUser: '',
-  updateTime: '',
-  tenantId: '',
-  isDeleted: 0
+  phone: '',
+  createDept: null,
+  status: 1, // 业务状态改为数字类型
+  createUser: null,
+  updateUser: null,
+  tenantId: ''
 })
 
 // 表单验证规则
@@ -530,104 +525,26 @@ const editFormRules = reactive({
 const supplierList = ref([])
 const corporateList = ref([])
 
-// 刀具品牌模拟数据
-const mockData = [
-  {
-    id: 2,
-    type: 'cuttingTool', // 刀具品牌
-    brandCode: 'CT002',
-    brandName: '山特维克刀具',
-    corporateName: '山特维克集团',
-    createDept: '采购部',
-    createTime: '2024-12-21 10:15:00',
-    createUser: '赵采购',
-    isDeleted: 0,
-    phone: '010-87654321',
-    status: 'active',
-    supplierName: '北京山特维克工具有限公司',
-    supplierUser: '陈经理',
-    tenantId: 'T001',
-    updateTime: '2024-12-26 16:45:00',
-    updateUser: '刘主管'
-  },
-  {
-    id: 4,
-    type: 'cuttingTool', // 刀具品牌
-    brandCode: 'CT004',
-    brandName: '伊斯卡刀具',
-    corporateName: '伊斯卡金属加工有限公司',
-    createDept: '采购部',
-    createTime: '2024-12-23 14:20:00',
-    createUser: '郑采购',
-    isDeleted: 0,
-    phone: '020-65432109',
-    status: 'active',
-    supplierName: '广州伊斯卡工具有限公司',
-    supplierUser: '林经理',
-    tenantId: 'T001',
-    updateTime: '2024-12-27 10:10:00',
-    updateUser: '黄主管'
-  }
-]
-
 // 获取列表数据
 const getList = async () => {
   loading.value = true
   try {
-    // 模拟API调用
-    setTimeout(() => {
-      let filteredData = [...mockData]
-
-      // 按品牌编码筛选
-      if (queryParams.brandCode) {
-        filteredData = filteredData.filter(item =>
-          item.brandCode.toLowerCase().includes(queryParams.brandCode.toLowerCase())
-        )
-      }
-
-      // 按品牌名称筛选
-      if (queryParams.brandName) {
-        filteredData = filteredData.filter(item =>
-          item.brandName.toLowerCase().includes(queryParams.brandName.toLowerCase())
-        )
-      }
-
-      // 按公司名称筛选
-      if (queryParams.corporateName) {
-        filteredData = filteredData.filter(item =>
-          item.corporateName.toLowerCase().includes(queryParams.corporateName.toLowerCase())
-        )
-      }
-
-      // 按供应商名称筛选
-      if (queryParams.supplierName) {
-        filteredData = filteredData.filter(item =>
-          item.supplierName === queryParams.supplierName
-        )
-      }
-
-      // 按业务状态筛选
-      if (queryParams.status) {
-        filteredData = filteredData.filter(item =>
-          item.status === queryParams.status
-        )
-      }
-
-      // 按创建人筛选
-      if (queryParams.createUser) {
-        filteredData = filteredData.filter(item =>
-          item.createUser.toLowerCase().includes(queryParams.createUser.toLowerCase())
-        )
-      }
-
-      // 分页处理
-      const start = (pagination.current - 1) * pagination.size
-      const end = start + pagination.size
-
-      tableData.value = filteredData.slice(start, end)
-      pagination.total = filteredData.length
-      loading.value = false
-    }, 500)
+    // 调用后端接口获取数据
+    const response = await listBrandInfo(queryParams)
+    
+    if (response.data && response.data.records) {
+      tableData.value = response.data.records
+      pagination.total = response.data.total || 0
+      pagination.current = response.data.current || 1
+      pagination.size = response.data.size || 10
+      pagination.pages = response.data.pages || 0
+    } else {
+      tableData.value = []
+      pagination.total = 0
+      pagination.pages = 0
+    }
+    
+    loading.value = false
   } catch (error) {
     console.error('获取数据失败:', error)
     ElMessage.error('获取数据失败')
@@ -647,14 +564,17 @@ const onSubmit = () => {
 
   // 处理时间范围
   if (formInline.createTime && formInline.createTime.length === 2) {
-    queryParams.createTimeStart = formInline.createTime[0].toISOString().split('T')[0]
-    queryParams.createTimeEnd = formInline.createTime[1].toISOString().split('T')[0]
+    queryParams.startTime = formInline.createTime[0]
+    queryParams.endTime = formInline.createTime[1]
   } else {
-    queryParams.createTimeStart = ''
-    queryParams.createTimeEnd = ''
+    queryParams.startTime = ''
+    queryParams.endTime = ''
   }
 
-  pagination.current = 1
+  // 设置分页参数
+  queryParams.current = pagination.current
+  queryParams.size = pagination.size
+
   getList()
 }
 
@@ -663,50 +583,36 @@ const reFreshForm = (formInlineRes) => {
   formInlineRes.resetFields()
   // 重置所有查询参数
   Object.keys(queryParams).forEach(key => {
-    queryParams[key] = ''
+    queryParams[key] = key === 'current' ? 1 : key === 'size' ? 10 : ''
   })
-  queryParams.type = 'cuttingTool' // 保持为刀具品牌
   pagination.current = 1
+  pagination.size = 10
   getList()
 }
 
 // 查看详情
 const handleDetail = (row) => {
-  const detailData = mockData.find(item => item.id === row.id)
-  if (detailData) {
-    currentBrand.value = { ...detailData }
-    detailDialogVisible.value = true
-  } else {
-    ElMessage.error('获取详情失败')
-  }
+  currentBrand.value = { ...row }
+  detailDialogVisible.value = true
 }
 
 // 修改操作
 const handleEdit = (row) => {
-  const editData = mockData.find(item => item.id === row.id)
-  if (editData) {
-    Object.assign(editForm, {
-      id: editData.id,
-      type: 'cuttingTool', // 固定为刀具品牌
-      brandCode: editData.brandCode || '',
-      brandName: editData.brandName || '',
-      corporateName: editData.corporateName || '',
-      createDept: editData.createDept || '',
-      phone: editData.phone || '',
-      status: editData.status || 'active',
-      supplierName: editData.supplierName || '',
-      supplierUser: editData.supplierUser || '',
-      createUser: editData.createUser || '',
-      createTime: editData.createTime || '',
-      updateUser: editData.updateUser || '',
-      updateTime: editData.updateTime || '',
-      tenantId: editData.tenantId || '',
-      isDeleted: editData.isDeleted || 0
-    })
-    editDialogVisible.value = true
-  } else {
-    ElMessage.error('获取数据失败')
-  }
+  Object.assign(editForm, {
+    id: row.id,
+    brandCode: row.brandCode || '',
+    brandName: row.brandName || '',
+    corporateName: row.corporateName || '',
+    supplierName: row.supplierName || '',
+    supplierUser: row.supplierUser || '',
+    phone: row.phone || '',
+    createDept: row.createDept || null,
+    status: row.status || 1,
+    createUser: row.createUser || null,
+    updateUser: row.updateUser || null,
+    tenantId: row.tenantId || ''
+  })
+  editDialogVisible.value = true
 }
 
 // 删除单个品牌
@@ -715,16 +621,21 @@ const handleDelete = (row) => {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  }).then(() => {
-    // 模拟删除操作
-    setTimeout(() => {
-      const index = mockData.findIndex(item => item.id === row.id)
-      if (index > -1) {
-        mockData[index].isDeleted = 1 // 标记为已删除
+  }).then(async () => {
+    try {
+      // 调用后端接口删除数据
+      const response = await delBrandInfo(row.id.toString())
+      
+      if (response.code === 200 && response.data) {
+        ElMessage.success('删除成功!')
+        getList() // 刷新列表
+      } else {
+        ElMessage.error('删除失败: ' + response.msg)
       }
-      ElMessage.success('删除成功!')
-      getList() // 刷新列表
-    }, 500)
+    } catch (error) {
+      console.error('删除失败:', error)
+      ElMessage.error('删除失败，请重试')
+    }
   }).catch(() => {
     ElMessage.info('已取消删除')
   })
@@ -733,7 +644,6 @@ const handleDelete = (row) => {
 // 打开新增对话框
 const openAddDialog = () => {
   resetAddForm()
-  addForm.type = 'cuttingTool' // 固定为刀具品牌
   addDialogVisible.value = true
 }
 
@@ -745,11 +655,13 @@ const handleSelectionChange = (selection) => {
 // 分页相关方法
 const handleSizeChange = (size) => {
   pagination.size = size
+  queryParams.size = size
   getList()
 }
 
 const handleCurrentChange = (current) => {
   pagination.current = current
+  queryParams.current = current
   getList()
 }
 
@@ -785,11 +697,11 @@ const resetAddForm = () => {
     brandCode: '',
     brandName: '',
     corporateName: '',
-    createDept: '',
-    phone: '',
-    status: 'active',
     supplierName: '',
     supplierUser: '',
+    phone: '',
+    createDept: null,
+    status: 1,
   })
   nextTick(() => {
     addFormRef.value?.clearValidate()
@@ -807,24 +719,22 @@ const submitAddForm = async () => {
     // 准备提交数据
     const submitData = {
       ...addForm,
-      id: Date.now(), // 模拟ID
-      type: 'cuttingTool', // 固定为刀具品牌
-      createUser: '当前用户',
-      updateUser: '当前用户',
-      createTime: new Date().toISOString().replace('T', ' ').substring(0, 19),
-      updateTime: new Date().toISOString().replace('T', ' ').substring(0, 19),
-      tenantId: 'T001',
-      isDeleted: 0
+      createUser: addForm.createUser || undefined,
+      updateUser: addForm.updateUser || undefined,
+      createDept: addForm.createDept || undefined,
+      tenantId: addForm.tenantId || undefined
     }
 
-    // 模拟API调用
-    setTimeout(() => {
-      mockData.push(submitData)
-      console.log('新增刀具品牌数据:', submitData)
+    // 调用后端接口
+    const response = await addBrandInfo(submitData)
+    
+    if (response.code === 200) {
       ElMessage.success('新增成功!')
       closeAddDialog()
       getList() // 刷新列表
-    }, 1000)
+    } else {
+      ElMessage.error('新增失败: ' + response.msg)
+    }
 
   } catch (error) {
     console.error('新增失败:', error)
@@ -848,11 +758,11 @@ const resetEditForm = () => {
     brandCode: '',
     brandName: '',
     corporateName: '',
-    createDept: '',
-    phone: '',
-    status: 'active',
     supplierName: '',
     supplierUser: '',
+    phone: '',
+    createDept: null,
+    status: 1,
   })
   nextTick(() => {
     editFormRef.value?.clearValidate()
@@ -870,22 +780,22 @@ const submitEditForm = async () => {
     // 准备提交数据
     const submitData = {
       ...editForm,
-      updateUser: '当前用户',
-      updateTime: new Date().toISOString().replace('T', ' ').substring(0, 19)
+      createUser: editForm.createUser || undefined,
+      updateUser: editForm.updateUser || undefined,
+      createDept: editForm.createDept || undefined,
+      tenantId: editForm.tenantId || undefined
     }
 
-    // 模拟API调用
-    setTimeout(() => {
-      const index = mockData.findIndex(item => item.id === editForm.id)
-      if (index > -1) {
-        Object.assign(mockData[index], submitData)
-      }
-
-      console.log('修改刀具品牌数据:', submitData)
+    // 调用后端接口
+    const response = await updateBrandInfo(submitData)
+    
+    if (response.code === 200) {
       ElMessage.success('修改成功!')
       closeEditDialog()
       getList() // 刷新列表
-    }, 1000)
+    } else {
+      ElMessage.error('修改失败: ' + response.msg)
+    }
 
   } catch (error) {
     console.error('修改失败:', error)

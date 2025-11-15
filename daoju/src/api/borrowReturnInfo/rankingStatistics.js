@@ -27,7 +27,7 @@ export function getYearlyUsageStatistics() {
 // 查询员工领刀排行
 export function getEmployeeRankingStatistics(query) {
   return request({
-    url: '/borrowReturnInfo/rankingStatistics/employeeRanking',
+    url: '/go/kaife/web/from/mss/statistics/chartslandHunting',
     method: 'get',
     params: query
   })
@@ -36,7 +36,7 @@ export function getEmployeeRankingStatistics(query) {
 // 查询设备用刀排行
 export function getEquipmentRankingStatistics(query) {
   return request({
-    url: '/borrowReturnInfo/rankingStatistics/equipmentRanking',
+    url: '/ou/knife/web/from/ms/statistics/chartsDeviceSanking',
     method: 'get',
     params: query
   })
@@ -45,7 +45,7 @@ export function getEquipmentRankingStatistics(query) {
 // 查询刀具型号排行
 export function getCutterModelRankingStatistics(query) {
   return request({
-    url: '/borrowReturnInfo/rankingStatistics/cutterModelRanking',
+    url: '/api/mifc/web/from/me/statistics/charts@tuttenbanking',
     method: 'get',
     params: query
   })
@@ -63,7 +63,7 @@ export function getWorkOrderRankingStatistics(query) {
 // 查询异常还刀排行
 export function getAbnormalReturnRankingStatistics(query) {
   return request({
-    url: '/borrowReturnInfo/rankingStatistics/abnormalReturnRanking',
+    url: '/ou/knife/web/from/news/statsstics/dhatsErrorBorrow',
     method: 'get',
     params: query
   })

@@ -343,19 +343,30 @@ export const constantRoutes = [
                             link: null
                         }
                     },
-
                     {
-                        name: "ReportRestockRecord",
-                        path: "restockRecord",
+                        name: "ReportTotalInventoryStats",
+                        path: "reporttotalInventoryStats",
                         hidden: false,
-                        component: () => import('@/views/historyRecord/restockRecord/index'),
+                        component: () => import('@/views/borrowReturnInfo/totalInventoryStats/index.vue'),
                         meta: {
-                            title: "货道库存统计",
-                            icon: "goods",
+                            title: "总库存统计",
+                            icon: "data-analysis",
                             noCache: false,
                             link: null
                         }
                     },
+                    // {
+                    //     name: "ReportRestockRecord",
+                    //     path: "restockRecord",
+                    //     hidden: false,
+                    //     component: () => import('@/views/historyRecord/restockRecord/index'),
+                    //     meta: {
+                    //         title: "货道库存统计",
+                    //         icon: "goods",
+                    //         noCache: false,
+                    //         link: null
+                    //     }
+                    // },
 
                     {
                         name: "ReportScrapKnifeCollectionStatistics",

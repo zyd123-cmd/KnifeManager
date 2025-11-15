@@ -1,10 +1,14 @@
 <template>
   <div class="container">
-    <!-- <div>货道库存统计</div> -->
-    
     <!-- 顶部查询条件区域 -->
     <div class="topSearchDiv">
       <el-form :inline="true" :model="searchForm" ref="searchFormRef" class="demo-form-inline">
+        <el-form-item label="刀柜编码:" prop="cabinetCode">
+          <el-input v-model="searchForm.cabinetCode" placeholder="请输入刀柜编码" clearable />
+        </el-form-item>
+        <el-form-item label="库位号:" prop="stockLoc">
+          <el-input v-model="searchForm.stockLoc" placeholder="请输入库位号" clearable />
+        </el-form-item>
         <el-form-item label="开始时间:" prop="startTime">
           <el-date-picker
             v-model="searchForm.startTime"
@@ -50,8 +54,45 @@
         <el-form-item>
           <el-button type="primary" @click="handleSearch" icon="search">查询</el-button>
           <el-button @click="resetSearch" icon="refresh">重置</el-button>
+          <el-button @click="handlePreBatchPlug" icon="data-analysis" :loading="loading">预补刀查询</el-button>
         </el-form-item>
       </el-form>
+    </div>
+
+    <!-- 预补刀查询结果展示 -->
+    <div class="stockResultDiv" v-if="successStockList.length > 0 || errorStockList.length > 0">
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-card class="stock-card success-card">
+            <template #header>
+              <div class="card-header">
+                <span>补刀成功货道列表 ({{ successStockList.length }})</span>
+              </div>
+            </template>
+            <el-table :data="successStockList" style="width: 100%" max-height="300">
+              <el-table-column prop="stockLoc" label="库位号" width="120" />
+              <el-table-column prop="locCapacity" label="货道容量" width="100" />
+              <el-table-column prop="locSurplus" label="当前库存" width="100" />
+              <el-table-column prop="plugNum" label="补货数量" width="100" />
+            </el-table>
+          </el-card>
+        </el-col>
+        <el-col :span="12">
+          <el-card class="stock-card error-card">
+            <template #header>
+              <div class="card-header">
+                <span>补刀失败货道列表 ({{ errorStockList.length }})</span>
+              </div>
+            </template>
+            <el-table :data="errorStockList" style="width: 100%" max-height="300">
+              <el-table-column prop="stockLoc" label="库位号" width="120" />
+              <el-table-column prop="locCapacity" label="货道容量" width="100" />
+              <el-table-column prop="locSurplus" label="当前库存" width="100" />
+              <el-table-column prop="massage" label="失败原因" />
+            </el-table>
+          </el-card>
+        </el-col>
+      </el-row>
     </div>
 
     <!-- 操作按钮区域 -->
@@ -88,7 +129,12 @@
         </el-table-column>
         <el-table-column prop="oldStockNum" label="操作前库存数" align="center" width="120"/>
         <el-table-column prop="newStockNum" label="操作后库存数" align="center" width="120"/>
+        <el-table-column prop="cabinetCode" label="刀柜编码" align="center" width="120"/>
         <el-table-column prop="stockLoc" label="库位号" align="center" width="120"/>
+        <el-table-column prop="locCapacity" label="货道容量" align="center" width="100"/>
+        <el-table-column prop="locSurplus" label="补货前数量" align="center" width="120"/>
+        <el-table-column prop="plugNum" label="补货后数量" align="center" width="120"/>
+        <el-table-column prop="massage" label="原因" align="center" width="150"/>
         <el-table-column prop="logType" label="补货类型" align="center" width="120">
           <template #default="scope">
             <el-tag :type="getLogTypeTagType(scope.row.logType)">
@@ -103,7 +149,6 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="cabinetCode" label="刀柜编码" align="center" width="120"/>
         <el-table-column prop="createTime" label="创建时间" align="center" width="160"/>
         <el-table-column prop="operator" label="操作人" align="center" width="100"/>
         <el-table-column label="操作" align="center" width="120" fixed="right">
@@ -143,8 +188,12 @@
           <el-descriptions-item label="新单价">{{ currentRecord.newPrice ? currentRecord.newPrice.toFixed(2) + '元' : '0.00元' }}</el-descriptions-item>
           <el-descriptions-item label="操作前库存数">{{ currentRecord.oldStockNum }}</el-descriptions-item>
           <el-descriptions-item label="操作后库存数">{{ currentRecord.newStockNum }}</el-descriptions-item>
-          <el-descriptions-item label="库位号">{{ currentRecord.stockLoc }}</el-descriptions-item>
           <el-descriptions-item label="刀柜编码">{{ currentRecord.cabinetCode }}</el-descriptions-item>
+          <el-descriptions-item label="库位号">{{ currentRecord.stockLoc }}</el-descriptions-item>
+          <el-descriptions-item label="货道容量">{{ currentRecord.locCapacity }}</el-descriptions-item>
+          <el-descriptions-item label="补货前数量">{{ currentRecord.locSurplus }}</el-descriptions-item>
+          <el-descriptions-item label="补货后数量">{{ currentRecord.plugNum }}</el-descriptions-item>
+          <el-descriptions-item label="原因">{{ currentRecord.massage }}</el-descriptions-item>
           <el-descriptions-item label="日志类型">
             <el-tag :type="getLogTypeTagType(currentRecord.logType)">
               {{ getLogTypeText(currentRecord.logType) }}
@@ -188,7 +237,7 @@
 <script setup name="RestockRecord">
 import { ref, reactive, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-// import { getRestockRecordList, exportRestockRecord } from '@/api/historyRecord/restockRecord'
+import { getRestockRecordList, exportRestockRecord, getPreBatchPlugResult } from '@/api/historyRecord/restockRecord'
 
 // 响应式数据
 const loading = ref(false)
@@ -196,6 +245,8 @@ const tableData = ref([])
 const selectedRows = ref([])
 const detailDialogVisible = ref(false)
 const currentRecord = ref(null)
+const successStockList = ref([]) // 补刀成功的货道列表
+const errorStockList = ref([]) // 补刀失败的货道列表
 
 // 搜索表单
 const searchForm = reactive({
@@ -204,7 +255,8 @@ const searchForm = reactive({
   recordStatus: null,
   rankingType: null,
   order: null,
-  size: 20
+  cabinetCode: null,
+  stockLoc: null
 })
 
 // 分页数据
@@ -216,215 +268,74 @@ const pagination = reactive({
 
 const searchFormRef = ref()
 
-// 模拟数据
-const mockData = [
-  {
-    id: 1,
-    brandName: '三菱',
-    cabinetCode: 'CAB001',
-    createDept: 1,
-    createTime: '2024-12-27 08:30:00',
-    createUser: 1001,
-    cutterCode: 'APMT1135PDER-M2',
-    cutterType: '车刀片',
-    detailsCode: '补货操作-批量入库',
-    isDeleted: 0,
-    lendUserName: '张三',
-    logStatus: 2,
-    logType: 'RESTOCK',
-    materialCode: 'MAT001',
-    newPrice: 125.50,
-    newStockNum: 50,
-    oldPrice: 120.00,
-    oldStockNum: 20,
-    operator: '仓库管理员',
-    quantity: 30,
-    remake: '定期补货，库存不足',
-    specification: 'APMT1135PDER-M2',
-    status: 4,
-    stockLoc: 'A01-001',
-    storageUserName: '李四',
-    tenantId: 'T001',
-    updateTime: '2024-12-27 08:35:00',
-    updateUser: 1001
-  },
-  {
-    id: 2,
-    brandName: '京瓷',
-    cabinetCode: 'CAB002',
-    createDept: 2,
-    createTime: '2024-12-27 09:15:00',
-    createUser: 1002,
-    cutterCode: 'DCMT11T304-HQ',
-    cutterType: '铣刀',
-    detailsCode: '紧急补货-库存告警',
-    isDeleted: 0,
-    lendUserName: '李四',
-    logStatus: 2,
-    logType: 'EMERGENCY_RESTOCK',
-    materialCode: 'MAT002',
-    newPrice: 89.30,
-    newStockNum: 25,
-    oldPrice: 85.00,
-    oldStockNum: 5,
-    operator: '仓库管理员',
-    quantity: 20,
-    remake: '库存告警，紧急补货',
-    specification: 'DCMT11T304-HQ',
-    status: 4,
-    stockLoc: 'B02-015',
-    storageUserName: '王五',
-    tenantId: 'T001',
-    updateTime: '2024-12-27 09:20:00',
-    updateUser: 1002
-  },
-  {
-    id: 3,
-    brandName: '山特维克',
-    cabinetCode: 'CAB001',
-    createDept: 1,
-    createTime: '2024-12-27 10:45:00',
-    createUser: 1003,
-    cutterCode: 'CNMG120408-PM',
-    cutterType: '钻头',
-    detailsCode: '新品补货-采购入库',
-    isDeleted: 0,
-    lendUserName: '王五',
-    logStatus: 2,
-    logType: 'NEW_PRODUCT_RESTOCK',
-    materialCode: 'MAT003',
-    newPrice: 156.80,
-    newStockNum: 40,
-    oldPrice: 150.00,
-    oldStockNum: 15,
-    operator: '采购专员',
-    quantity: 25,
-    remake: '新品采购入库',
-    specification: 'CNMG120408-PM',
-    status: 4,
-    stockLoc: 'C03-008',
-    storageUserName: '赵六',
-    tenantId: 'T001',
-    updateTime: '2024-12-27 10:50:00',
-    updateUser: 1003
-  },
-  {
-    id: 4,
-    brandName: '瓦尔特',
-    cabinetCode: 'CAB003',
-    createDept: 3,
-    createTime: '2024-12-26 17:20:00',
-    createUser: 1004,
-    cutterCode: 'WNMG080408-MS3',
-    cutterType: '车刀片',
-    detailsCode: '计划补货-月度补充',
-    isDeleted: 0,
-    lendUserName: '赵六',
-    logStatus: 2,
-    logType: 'PLANNED_RESTOCK',
-    materialCode: 'MAT004',
-    newPrice: 98.60,
-    newStockNum: 35,
-    oldPrice: 95.00,
-    oldStockNum: 12,
-    operator: '计划专员',
-    quantity: 23,
-    remake: '月度计划补货',
-    specification: 'WNMG080408-MS3',
-    status: 4,
-    stockLoc: 'D04-012',
-    storageUserName: '孙七',
-    tenantId: 'T001',
-    updateTime: '2024-12-26 17:25:00',
-    updateUser: 1004
-  },
-  {
-    id: 5,
-    brandName: '伊斯卡',
-    cabinetCode: 'CAB002',
-    createDept: 2,
-    createTime: '2024-12-25 15:45:00',
-    createUser: 1005,
-    cutterCode: 'ADKT1505PDR-HM',
-    cutterType: '铣刀',
-    detailsCode: '返修补货-质量问题处理',
-    isDeleted: 0,
-    lendUserName: '孙七',
-    logStatus: 2,
-    logType: 'REPAIR_RESTOCK',
-    materialCode: 'MAT005',
-    newPrice: 234.90,
-    newStockNum: 18,
-    oldPrice: 230.00,
-    oldStockNum: 8,
-    operator: '质量专员',
-    quantity: 10,
-    remake: '返修品重新入库',
-    specification: 'ADKT1505PDR-HM',
-    status: 4,
-    stockLoc: 'E05-020',
-    storageUserName: '管理员',
-    tenantId: 'T001',
-    updateTime: '2024-12-25 15:50:00',
-    updateUser: 1005
-  }
-]
-
 // 生命周期
 onMounted(() => {
   getList()
 })
 
 // 方法
-const getList = () => {
+const getList = async () => {
   loading.value = true
   
-  // 模拟API调用
-  setTimeout(() => {
-    // 这里可以根据搜索条件过滤数据
-    let filteredData = [...mockData]
-    
-    // 根据recordStatus过滤
-    if (searchForm.recordStatus !== null) {
-      filteredData = filteredData.filter(item => item.status === searchForm.recordStatus)
-    }
-    
-    // 根据时间范围过滤
-    if (searchForm.startTime) {
-      filteredData = filteredData.filter(item => item.createTime >= searchForm.startTime)
-    }
-    if (searchForm.endTime) {
-      filteredData = filteredData.filter(item => item.createTime <= searchForm.endTime)
-    }
-    
-    // 排序
-    if (searchForm.rankingType !== null && searchForm.order !== null) {
-      filteredData.sort((a, b) => {
-        let valueA, valueB
-        if (searchForm.rankingType === 0) {
-          // 按数量排序
-          valueA = a.quantity
-          valueB = b.quantity
-        } else {
-          // 按金额排序
-          valueA = a.newPrice
-          valueB = b.newPrice
-        }
-        
-        if (searchForm.order === 0) {
-          // 从大到小
-          return valueB - valueA
-        } else {
-          // 从小到大
-          return valueA - valueB
-        }
-      })
-    }
-    
-    tableData.value = filteredData
-    pagination.total = filteredData.length
+  try {
+    // 模拟API调用
+    setTimeout(() => {
+      // 这里可以根据搜索条件过滤数据
+      let filteredData = [...mockData]
+      
+      // 根据recordStatus过滤
+      if (searchForm.recordStatus !== null) {
+        filteredData = filteredData.filter(item => item.status === searchForm.recordStatus)
+      }
+      
+      // 根据时间范围过滤
+      if (searchForm.startTime) {
+        filteredData = filteredData.filter(item => item.createTime >= searchForm.startTime)
+      }
+      if (searchForm.endTime) {
+        filteredData = filteredData.filter(item => item.createTime <= searchForm.endTime)
+      }
+      
+      // 排序
+      if (searchForm.rankingType !== null && searchForm.order !== null) {
+        filteredData.sort((a, b) => {
+          let valueA, valueB
+          if (searchForm.rankingType === 0) {
+            // 按数量排序
+            valueA = a.quantity
+            valueB = b.quantity
+          } else {
+            // 按金额排序
+            valueA = a.newPrice
+            valueB = b.newPrice
+          }
+          
+          if (searchForm.order === 0) {
+            // 从大到小
+            return valueB - valueA
+          } else {
+            // 从小到大
+            return valueA - valueB
+          }
+        })
+      }
+      
+      tableData.value = filteredData
+      pagination.total = filteredData.length
+      
+      // 模拟预补刀查询结果数据
+      if (searchForm.cabinetCode) {
+        successStockList.value = mockSuccessStock
+        errorStockList.value = mockErrorStock
+      }
+      
+      loading.value = false
+    }, 500)
+  } catch (error) {
+    console.error('获取补货记录失败:', error)
+    ElMessage.error('获取补货记录失败')
     loading.value = false
-  }, 500)
+  }
 }
 
 const handleSearch = () => {
@@ -434,6 +345,8 @@ const handleSearch = () => {
 
 const resetSearch = () => {
   Object.assign(searchForm, {
+    cabinetCode: null,
+    stockLoc: null,
     startTime: '',
     endTime: '',
     recordStatus: null,
@@ -444,6 +357,10 @@ const resetSearch = () => {
     searchFormRef.value?.clearValidate()
   })
   getList()
+  
+  // 重置预补刀查询结果
+  successStockList.value = []
+  errorStockList.value = []
 }
 
 const handleSelectionChange = (selection) => {
@@ -473,6 +390,29 @@ const handleExport = () => {
 
   // 实际导出逻辑
   console.log('导出数据:', selectedRows.value)
+}
+
+// 获取预补刀查询结果
+const handlePreBatchPlug = async () => {
+  if (!searchForm.cabinetCode) {
+    ElMessage.warning('请输入刀柜编码')
+    return
+  }
+  
+  loading.value = true
+  try {
+    // 模拟API调用
+    setTimeout(() => {
+      successStockList.value = mockSuccessStock
+      errorStockList.value = mockErrorStock
+      ElMessage.success('获取预补刀查询结果成功')
+      loading.value = false
+    }, 500)
+  } catch (error) {
+    console.error('获取预补刀查询结果失败:', error)
+    ElMessage.error('获取预补刀查询结果失败')
+    loading.value = false
+  }
 }
 
 // 状态文本和样式
@@ -539,6 +479,216 @@ const getLogStatusTagType = (logStatus) => {
   }
   return typeMap[logStatus] || 'info'
 }
+
+// 模拟数据
+const mockData = [
+  {
+    id: 1,
+    brandName: '三菱',
+    cabinetCode: 'CAB001',
+    createDept: 1,
+    createTime: '2024-12-27 08:30:00',
+    createUser: 1001,
+    cutterCode: 'APMT1135PDER-M2',
+    cutterType: '车刀片',
+    detailsCode: '补货操作-批量入库',
+    isDeleted: 0,
+    lendUserName: '张三',
+    logStatus: 2,
+    logType: 'RESTOCK',
+    materialCode: 'MAT001',
+    newPrice: 125.50,
+    newStockNum: 50,
+    oldPrice: 120.00,
+    oldStockNum: 20,
+    operator: '仓库管理员',
+    quantity: 30,
+    remake: '定期补货，库存不足',
+    specification: 'APMT1135PDER-M2',
+    status: 4,
+    stockLoc: 'A01-001',
+    locCapacity: 100,
+    locSurplus: 20,
+    plugNum: 30,
+    massage: '补货成功',
+    storageUserName: '李四',
+    tenantId: 'T001',
+    updateTime: '2024-12-27 08:35:00',
+    updateUser: 1001
+  },
+  {
+    id: 2,
+    brandName: '京瓷',
+    cabinetCode: 'CAB002',
+    createDept: 2,
+    createTime: '2024-12-27 09:15:00',
+    createUser: 1002,
+    cutterCode: 'DCMT11T304-HQ',
+    cutterType: '铣刀',
+    detailsCode: '紧急补货-库存告警',
+    isDeleted: 0,
+    lendUserName: '李四',
+    logStatus: 2,
+    logType: 'EMERGENCY_RESTOCK',
+    materialCode: 'MAT002',
+    newPrice: 89.30,
+    newStockNum: 25,
+    oldPrice: 85.00,
+    oldStockNum: 5,
+    operator: '仓库管理员',
+    quantity: 20,
+    remake: '库存告警，紧急补货',
+    specification: 'DCMT11T304-HQ',
+    status: 4,
+    stockLoc: 'B02-015',
+    locCapacity: 50,
+    locSurplus: 5,
+    plugNum: 20,
+    massage: '紧急补货完成',
+    storageUserName: '王五',
+    tenantId: 'T001',
+    updateTime: '2024-12-27 09:20:00',
+    updateUser: 1002
+  },
+  {
+    id: 3,
+    brandName: '山特维克',
+    cabinetCode: 'CAB001',
+    createDept: 1,
+    createTime: '2024-12-27 10:45:00',
+    createUser: 1003,
+    cutterCode: 'CNMG120408-PM',
+    cutterType: '钻头',
+    detailsCode: '新品补货-采购入库',
+    isDeleted: 0,
+    lendUserName: '王五',
+    logStatus: 2,
+    logType: 'NEW_PRODUCT_RESTOCK',
+    materialCode: 'MAT003',
+    newPrice: 156.80,
+    newStockNum: 40,
+    oldPrice: 150.00,
+    oldStockNum: 15,
+    operator: '采购专员',
+    quantity: 25,
+    remake: '新品采购入库',
+    specification: 'CNMG120408-PM',
+    status: 4,
+    stockLoc: 'C03-008',
+    locCapacity: 80,
+    locSurplus: 15,
+    plugNum: 25,
+    massage: '新品补货完成',
+    storageUserName: '赵六',
+    tenantId: 'T001',
+    updateTime: '2024-12-27 10:50:00',
+    updateUser: 1003
+  },
+  {
+    id: 4,
+    brandName: '瓦尔特',
+    cabinetCode: 'CAB003',
+    createDept: 3,
+    createTime: '2024-12-26 17:20:00',
+    createUser: 1004,
+    cutterCode: 'WNMG080408-MS3',
+    cutterType: '车刀片',
+    detailsCode: '计划补货-月度补充',
+    isDeleted: 0,
+    lendUserName: '赵六',
+    logStatus: 2,
+    logType: 'PLANNED_RESTOCK',
+    materialCode: 'MAT004',
+    newPrice: 98.60,
+    newStockNum: 35,
+    oldPrice: 95.00,
+    oldStockNum: 12,
+    operator: '计划专员',
+    quantity: 23,
+    remake: '月度计划补货',
+    specification: 'WNMG080408-MS3',
+    status: 4,
+    stockLoc: 'D04-012',
+    locCapacity: 60,
+    locSurplus: 12,
+    plugNum: 23,
+    massage: '计划补货完成',
+    storageUserName: '孙七',
+    tenantId: 'T001',
+    updateTime: '2024-12-26 17:25:00',
+    updateUser: 1004
+  },
+  {
+    id: 5,
+    brandName: '伊斯卡',
+    cabinetCode: 'CAB002',
+    createDept: 2,
+    createTime: '2024-12-25 15:45:00',
+    createUser: 1005,
+    cutterCode: 'ADKT1505PDR-HM',
+    cutterType: '铣刀',
+    detailsCode: '返修补货-质量问题处理',
+    isDeleted: 0,
+    lendUserName: '孙七',
+    logStatus: 2,
+    logType: 'REPAIR_RESTOCK',
+    materialCode: 'MAT005',
+    newPrice: 234.90,
+    newStockNum: 18,
+    oldPrice: 230.00,
+    oldStockNum: 8,
+    operator: '质量专员',
+    quantity: 10,
+    remake: '返修品重新入库',
+    specification: 'ADKT1505PDR-HM',
+    status: 4,
+    stockLoc: 'E05-020',
+    locCapacity: 40,
+    locSurplus: 8,
+    plugNum: 10,
+    massage: '返修补货完成',
+    storageUserName: '管理员',
+    tenantId: 'T001',
+    updateTime: '2024-12-25 15:50:00',
+    updateUser: 1005
+  }
+]
+
+// 模拟预补刀查询结果数据
+const mockSuccessStock = [
+  {
+    stockLoc: 'A01-001',
+    locCapacity: 100,
+    locSurplus: 20,
+    plugNum: 30,
+    massage: ''
+  },
+  {
+    stockLoc: 'B02-015',
+    locCapacity: 50,
+    locSurplus: 15,
+    plugNum: 20,
+    massage: ''
+  }
+]
+
+const mockErrorStock = [
+  {
+    stockLoc: 'C03-008',
+    locCapacity: 80,
+    locSurplus: 75,
+    plugNum: 0,
+    massage: '货道已满，无法补货'
+  },
+  {
+    stockLoc: 'D04-012',
+    locCapacity: 60,
+    locSurplus: 55,
+    plugNum: 0,
+    massage: '库存充足，无需补货'
+  }
+]
+
 </script>
 
 <style scoped>
@@ -570,4 +720,36 @@ const getLogStatusTagType = (logStatus) => {
 .demo-form-inline .el-form-item {
   margin-bottom: 10px;
 }
+
+.stockResultDiv {
+  margin-bottom: 20px;
+}
+
+.stock-card {
+  border-radius: 8px;
+}
+
+.success-card {
+  border-left: 4px solid #67c23a;
+}
+
+.error-card {
+  border-left: 4px solid #f56c6c;
+}
+
+.card-header {
+  font-weight: 600;
+  color: #303133;
+}
 </style>
+
+
+
+
+
+
+
+
+
+
+

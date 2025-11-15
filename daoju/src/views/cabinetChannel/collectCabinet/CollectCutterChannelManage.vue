@@ -35,10 +35,10 @@
             <el-option label="维护" :value="2"/>
           </el-select>
         </el-form-item>
-        <el-form-item label="绑定状态:" prop="isBound">
-          <el-select v-model="searchForm.isBound" placeholder="请选择绑定状态" clearable>
-            <el-option label="已绑定" :value="true"/>
-            <el-option label="未绑定" :value="false"/>
+        <el-form-item label="绑定状态:" prop="isBan">
+          <el-select v-model="searchForm.isBan" placeholder="请选择绑定状态" clearable>
+            <el-option label="非禁用" value="0"/>
+            <el-option label="禁用" value="1"/>
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -83,19 +83,26 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="isBound" label="绑定状态" align="center" width="100">
+        <el-table-column prop="isBan" label="绑定状态" align="center" width="100">
           <template #default="scope">
-            <el-tag :type="scope.row.isBound ? 'success' : 'info'">
-              {{ scope.row.isBound ? '已绑定' : '未绑定' }}
+            <el-tag :type="scope.row.isBan === '0' ? 'success' : 'danger'">
+              {{ scope.row.isBan === '0' ? '非禁用' : '禁用' }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="cutterCode" label="绑定刀具型号" align="center" width="150"/>
         <el-table-column prop="warehouseInTime" label="最近更新时间" align="center" width="160"/>
-        <el-table-column label="操作" align="center" width="100" fixed="right">
+        <el-table-column label="操作" align="center" width="150" fixed="right">
           <template #default="scope">
             <div class="operation-buttons">
               <el-button type="primary" size="small" @click="handleDetail(scope.row)">详情</el-button>
+              <el-button 
+                :type="scope.row.isBan === '0' ? 'danger' : 'success'" 
+                size="small" 
+                @click="toggleBanStatus(scope.row)"
+              >
+                {{ scope.row.isBan === '0' ? '禁用' : '启用' }}
+              </el-button>
             </div>
           </template>
         </el-table-column>
@@ -128,7 +135,7 @@
           <el-descriptions-item label="包装数量">{{ currentRecord.packQty }}</el-descriptions-item>
           <el-descriptions-item label="库位类型">
             <el-tag :type="currentRecord.locType === 0 ? 'primary' : 'warning'">
-              {{ currentRecord.locType === 0 ? '取刀柜' : '收刀柜' }}
+              {{ currentRecord.locType === 0 ? '收刀柜' : '取刀柜' }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="库位状态">
@@ -137,19 +144,22 @@
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="绑定状态">
-            <el-tag :type="currentRecord.isBound ? 'success' : 'info'">
-              {{ currentRecord.isBound ? '已绑定' : '未绑定' }}
+            <el-tag :type="currentRecord.isBan === '0' ? 'success' : 'danger'">
+              {{ currentRecord.isBan === '0' ? '非禁用' : '禁用' }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="绑定刀具型号">{{ currentRecord.cutterCode }}</el-descriptions-item>
           <el-descriptions-item label="刀具ID">{{ currentRecord.cutterId || '未绑定' }}</el-descriptions-item>
-          <el-descriptions-item label="是否禁用">
-            <el-tag :type="currentRecord.isBan === 0 ? 'success' : 'danger'">
-              {{ currentRecord.isBan === 0 ? '非禁用' : '禁用' }}
-            </el-tag>
-          </el-descriptions-item>
           <el-descriptions-item label="最近更新时间">{{ currentRecord.warehouseInTime }}</el-descriptions-item>
           <el-descriptions-item label="预警数量">{{ currentRecord.warningNum }}</el-descriptions-item>
+          <!-- 新增字段 -->
+          <el-descriptions-item label="品牌编码">{{ currentRecord.brandCode }}</el-descriptions-item>
+          <el-descriptions-item label="品牌名称">{{ currentRecord.brandName }}</el-descriptions-item>
+          <el-descriptions-item label="刀具类型">{{ currentRecord.cutterType }}</el-descriptions-item>
+          <el-descriptions-item label="物料编码">{{ currentRecord.materialCode }}</el-descriptions-item>
+          <el-descriptions-item label="物料类型">{{ currentRecord.materialType }}</el-descriptions-item>
+          <el-descriptions-item label="规格">{{ currentRecord.specification }}</el-descriptions-item>
+          <el-descriptions-item label="单价">{{ currentRecord.price }}</el-descriptions-item>
         </el-descriptions>
       </div>
       <template #footer>
@@ -184,6 +194,7 @@
 import { ref, reactive, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Warning } from '@element-plus/icons-vue'
+import { listCollectHandleCabinet, unbindCutter, changeBan, getCollectHandleStatistics } from '@/api/cabinetChannel/collectHandleCabinet.js'
 
 // 响应式数据
 const loading = ref(false)
@@ -203,7 +214,7 @@ const searchForm = reactive({
   stockLoc: '',
   locPrefix: '',
   stockStatus: null,
-  isBound: null
+  isBan: null
 })
 
 // 分页数据
@@ -215,133 +226,41 @@ const pagination = reactive({
 
 const searchFormRef = ref()
 
-// 货道模拟数据
-const mockData = [
-  {
-    id: 1,
-    cabinetCode: 'CAB20241227001',
-    stockLoc: 'A01-001',
-    locPrefix: 'A',
-    locCapacity: 50,
-    locSurplus: 35,
-    packQty: 10,
-    stockStatus: 1,
-    isBound: true,
-    cutterCode: 'APMT1135PDER-M2',
-    cutterId: 1001,
-    isBan: 0,
-    locType: 1,
-    warehouseInTime: '2024-12-27 08:30:00',
-    warningNum: 5
-  },
-  {
-    id: 2,
-    cabinetCode: 'CAB20241227002',
-    stockLoc: 'B02-015',
-    locPrefix: 'B',
-    locCapacity: 40,
-    locSurplus: 28,
-    packQty: 5,
-    stockStatus: 0,
-    isBound: false,
-    cutterCode: '',
-    cutterId: null,
-    isBan: 0,
-    locType: 1,
-    warehouseInTime: '2024-12-26 15:20:00',
-    warningNum: 3
-  },
-  {
-    id: 3,
-    cabinetCode: 'CAB20241227003',
-    stockLoc: 'C03-008',
-    locPrefix: 'C',
-    locCapacity: 60,
-    locSurplus: 42,
-    packQty: 8,
-    stockStatus: 1,
-    isBound: true,
-    cutterCode: 'CNMG120408-PM',
-    cutterId: 1003,
-    isBan: 0,
-    locType: 1,
-    warehouseInTime: '2024-12-25 09:45:00',
-    warningNum: 8
-  },
-  {
-    id: 4,
-    cabinetCode: 'CAB20241227004',
-    stockLoc: 'D04-012',
-    locPrefix: 'D',
-    locCapacity: 30,
-    locSurplus: 15,
-    packQty: 6,
-    stockStatus: 2,
-    isBound: false,
-    cutterCode: '',
-    cutterId: null,
-    isBan: 1,
-    locType: 1,
-    warehouseInTime: '2024-12-24 14:15:00',
-    warningNum: 2
-  },
-  {
-    id: 5,
-    cabinetCode: 'CAB20241227005',
-    stockLoc: 'E05-020',
-    locPrefix: 'E',
-    locCapacity: 45,
-    locSurplus: 30,
-    packQty: 12,
-    stockStatus: 0,
-    isBound: true,
-    cutterCode: 'ADKT1505PDR-HM',
-    cutterId: 1005,
-    isBan: 0,
-    locType: 1,
-    warehouseInTime: '2024-12-23 11:30:00',
-    warningNum: 6
-  }
-]
-
 // 生命周期
 onMounted(() => {
   getList()
 })
 
 // 货道列表查询
-const getList = () => {
+const getList = async () => {
   loading.value = true
 
-  // 模拟API调用
-  setTimeout(() => {
-    let filteredData = [...mockData]
-
-    // 货道相关筛选条件
-    if (searchForm.cabinetCode) {
-      filteredData = filteredData.filter(item =>
-        item.cabinetCode.includes(searchForm.cabinetCode)
-      )
-    }
-    if (searchForm.stockLoc) {
-      filteredData = filteredData.filter(item =>
-        item.stockLoc.includes(searchForm.stockLoc)
-      )
-    }
-    if (searchForm.locPrefix) {
-      filteredData = filteredData.filter(item => item.locPrefix === searchForm.locPrefix)
-    }
-    if (searchForm.stockStatus !== null) {
-      filteredData = filteredData.filter(item => item.stockStatus === searchForm.stockStatus)
-    }
-    if (searchForm.isBound !== null) {
-      filteredData = filteredData.filter(item => item.isBound === searchForm.isBound)
+  try {
+    // 构造查询参数
+    const params = {
+      ...searchForm,
+      current: pagination.current,
+      size: pagination.size
     }
 
-    tableData.value = filteredData
-    pagination.total = filteredData.length
+    // 调用后端接口获取数据
+    const response = await listCollectHandleCabinet(params)
+    
+    if (response.data) {
+      tableData.value = response.data
+      // 注意：实际项目中应从response中获取total，这里简化处理
+      pagination.total = response.data.length 
+    } else {
+      tableData.value = []
+      pagination.total = 0
+    }
+    
     loading.value = false
-  }, 500)
+  } catch (error) {
+    console.error('获取数据失败:', error)
+    ElMessage.error('获取数据失败')
+    loading.value = false
+  }
 }
 
 // 搜索与重置
@@ -356,7 +275,7 @@ const resetSearch = () => {
     stockLoc: '',
     locPrefix: '',
     stockStatus: null,
-    isBound: null
+    isBan: null
   })
   nextTick(() => {
     searchFormRef.value?.clearValidate()
@@ -383,6 +302,50 @@ const handleCurrentChange = (current) => {
 const handleDetail = (row) => {
   currentRecord.value = row
   detailDialogVisible.value = true
+}
+
+// 提交解绑
+const submitUnbind = async () => {
+  if (!currentUnbindRow.value) return
+  
+  unbindLoading.value = true
+  
+  try {
+    const response = await unbindCutter(currentUnbindRow.value.id)
+    
+    if (response.code === 200 && response.data) {
+      ElMessage.success('解绑成功')
+      unbindDialogVisible.value = false
+      getList() // 刷新列表
+    } else {
+      ElMessage.error('解绑失败: ' + response.msg)
+    }
+  } catch (error) {
+    console.error('解绑失败:', error)
+    ElMessage.error('解绑失败，请重试')
+  } finally {
+    unbindLoading.value = false
+  }
+}
+
+// 禁用/启用货道
+const toggleBanStatus = async (row) => {
+  try {
+    // 切换状态：0-非禁用（启用） 1-禁用
+    const newBanStatus = row.isBan === '0' ? '1' : '0'
+    const response = await changeBan(row.id, newBanStatus)
+    
+    if (response.code === 200 && response.data) {
+      ElMessage.success(`${newBanStatus === '0' ? '启用' : '禁用'}成功`)
+      // 更新当前行的状态
+      row.isBan = newBanStatus
+    } else {
+      ElMessage.error(`${newBanStatus === '0' ? '启用' : '禁用'}失败: ` + response.msg)
+    }
+  } catch (error) {
+    console.error('操作失败:', error)
+    ElMessage.error('操作失败，请重试')
+  }
 }
 
 // 状态显示转换方法
