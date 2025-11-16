@@ -436,18 +436,18 @@ export const constantRoutes = [
                         }
                     },
 
-                    {
-                        name: "ReportAlarmWarning",
-                        path: "reportindex",
-                        hidden: false,
-                        component: () => import('@/views/alarmWarning/index.vue'),
-                        meta: {
-                            title: "预警警告",
-                            icon: "warning",
-                            noCache: false,
-                            link: null
-                        }
-                    },
+                    // {
+                    //     name: "ReportAlarmWarning",
+                    //     path: "reportindex",
+                    //     hidden: false,
+                    //     component: () => import('@/views/alarmWarning/index.vue'),
+                    //     meta: {
+                    //         title: "预警警告",
+                    //         icon: "warning",
+                    //         noCache: false,
+                    //         link: null
+                    //     }
+                    // },
                 ]
             },
         ]

@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 查询预警警告列表
 export function listAlarmWarning(query) {
   return request({
-    url: '/alarmWarning/list',
+    url: '/alarm_list',
     method: 'get',
     params: query
   })
@@ -55,7 +55,7 @@ export function batchDelAlarmWarning(ids) {
 // 导出预警警告
 export function exportAlarmWarning(query) {
   return request({
-    url: '/alarmWarning/export',
+    url: '/export_alarm',
     method: 'get',
     params: query
   })
@@ -72,7 +72,7 @@ export function getAlarmThresholds() {
 // 更新预警阈值设置
 export function updateAlarmThresholds(data) {
   return request({
-    url: '/alarmWarning/thresholds',
+    url: '/alarm_threshold',
     method: 'put',
     data: data
   })
@@ -81,7 +81,7 @@ export function updateAlarmThresholds(data) {
 // 处理预警警告
 export function handleAlarmWarning(id, data) {
   return request({
-    url: '/alarmWarning/handle/' + id,
+    url: '/handle_alarm/' + id,
     method: 'put',
     data: data
   })
@@ -90,7 +90,7 @@ export function handleAlarmWarning(id, data) {
 // 批量处理预警警告
 export function batchHandleAlarmWarning(ids, data) {
   return request({
-    url: '/alarmWarning/batchHandle',
+    url: '/batch_handle_alarm',
     method: 'put',
     data: { ids, ...data }
   })
@@ -99,7 +99,7 @@ export function batchHandleAlarmWarning(ids, data) {
 // 获取预警统计
 export function getAlarmStatistics() {
   return request({
-    url: '/alarmWarning/statistics',
+    url: '/alarm_statistics',
     method: 'get'
   })
 }
