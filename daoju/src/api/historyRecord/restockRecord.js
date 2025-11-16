@@ -3,16 +3,16 @@ import request from '@/utils/request'
 // 分页查询补货记录
 export function getRestockRecordList(query) {
   return request({
-    url: '/qw/knife/web/from/mes/cabinetStock/preBatchPlug',
-    method: 'post',
-    data: query
+    url: '/replenish_list',
+    method: 'get',
+    params: query
   })
 }
 
 // 导出补货记录
 export function exportRestockRecord(query) {
   return request({
-    url: '/export-restock-record',
+    url: '/export_replenish',
     method: 'get',
     params: query,
     responseType: 'blob'

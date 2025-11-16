@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 分页查询公共暂存记录
 export function getPublicStorageList(query) {
   return request({
-    url: '/qw/knife/web/from/mes/record/publicStorage',
+    url: '/storage_list',
     method: 'get',
     params: query
   })
@@ -12,7 +12,7 @@ export function getPublicStorageList(query) {
 // 导出公共暂存记录
 export function exportPublicStorage(query) {
   return request({
-    url: '/qw/knife/web/from/mes/record/exportPublicStorage',
+    url: '/export_storage',
     method: 'get',
     params: query,
     responseType: 'blob'
